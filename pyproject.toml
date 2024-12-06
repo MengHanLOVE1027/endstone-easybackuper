@@ -1,0 +1,20 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "endstone-easybackuper"
+version = "0.3.0"
+authors = [
+    { name = "MengHanLOVE", email = "2193438288@qq.com" },
+]
+description = "基于 EndStone 的最最最简单的Python热备份插件"
+readme = "README.md"
+license = { file = "LICENSE" }
+keywords = ["endstone", "plugin", "backup", "menghan", "menghanlove"]
+
+[project.urls]
+Homepage = "https://github.com/EndstoneMC/python-example-plugin"
+
+[project.entry-points."endstone"]
+easybackuper = "endstone_easybackuper:EasyBackuperPlugin"
