@@ -14,7 +14,7 @@ license = { file = "LICENSE" }
 keywords = ["endstone", "plugin", "backup", "menghan", "menghanlove"]
 
 [project.urls]
-Homepage = "https://github.com/EndstoneMC/python-example-plugin"
+Homepage = "https://github.com/MengHanLOVE1027/endstone-easybackuper"
 
 [project.entry-points."endstone"]
 easybackuper = "endstone_easybackuper:EasyBackuperPlugin"
