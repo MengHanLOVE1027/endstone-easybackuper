@@ -10,7 +10,7 @@ from endstone.plugin import Plugin
 # TAG: 全局常量
 plugin_name = "EasyBackuper"
 plugin_name_smallest = "easybackuper"
-plugin_description = "基于 LeviLamina - LSE引擎 的 最最最简单的JS热备份插件"
+plugin_description = "基于 LeviLamina - LSE引擎 的 最最最简单的JS热备份插件 / The simplest Python hot backup plugin based on EndStone."
 plugin_version = "0.3.0"
 plugin_author = ["梦涵LOVE"]
 plugin_the_help_link = "https://www.minebbs.com/resources/easybackuper-eb.7771/"
@@ -46,6 +46,7 @@ def plugin_print(text) -> bool:
     logger_head = "[\x1b[32m" + plugin_name + "\x1b[0m] "
     print(logger_head + str(text))
     return True
+
 
 # TAG: 默认配置文件
 plugin_config_file = """
@@ -134,11 +135,15 @@ Cron_Use_Backup = True
 
 my_beautiful_text = f"This is {ColorFormat.YELLOW}yellow, {ColorFormat.AQUA}aqua and {ColorFormat.GOLD}gold{ColorFormat.RESET}."
 
+
 class MyZipInfo(zipfile.ZipInfo):
     # 重新定义_encodeFilename方法，将编码方式改为UTF-8
     def _encodeFilename(self, zefilename):
-        return zefilename.encode('utf-8')
+        return zefilename.encode("utf-8")
+
+
 zipfile.ZipInfo = MyZipInfo
+
 
 # TAG: 插件入口点
 class EasyBackuperPlugin(Plugin):
@@ -207,7 +212,10 @@ class EasyBackuperPlugin(Plugin):
             messages = []
 
             # sender = CommandSenderWrapper(server.command_sender, on_message=lambda msg: print(dir(msg)))
-            sender = CommandSenderWrapper(server.command_sender, on_message=lambda msg: messages.append(msg.params))
+            sender = CommandSenderWrapper(
+                server.command_sender,
+                on_message=lambda msg: messages.append(msg.params),
+            )
 
             ready = server.dispatch_command(sender, "save query")
             if not ready:
@@ -254,14 +262,18 @@ class EasyBackuperPlugin(Plugin):
                             print(f"移动到位置: {position}")
                             print(f"文件已被截取到位置: {position}")
                             print(f"截取后的文件大小: {new_size} 字节")
-                            server.logger.warning(f"文件大小减少了: {size_difference} 字节")
+                            server.logger.warning(
+                                f"文件大小减少了: {size_difference} 字节"
+                            )
                         elif size_difference < 0:
                             print(real_file_name, position)
                             print(f"原始文件大小: {original_size} 字节")
                             print(f"移动到位置: {position}")
                             print(f"文件已被截取到位置: {position}")
                             print(f"截取后的文件大小: {new_size} 字节")
-                            server.logger.warning(f"文件大小减少了: {size_difference} 字节")
+                            server.logger.warning(
+                                f"文件大小减少了: {size_difference} 字节"
+                            )
                         # else:
                         #     print(f"文件大小减少了: {size_difference} 字节")
 
@@ -282,22 +294,27 @@ class EasyBackuperPlugin(Plugin):
 
             # 压缩存档
             month_rank_dir = str(backup_tmp_path)
-            zip_file_new = pluginConfig["BackupFolderPath"] + '/' + month_rank_dir + '.zip'
+            zip_file_new = (
+                pluginConfig["BackupFolderPath"] + "/" + month_rank_dir + ".zip"
+            )
             if os.path.exists(month_rank_dir):
-                print('正在为您压缩...')
+                print("正在为您压缩...")
 
                 if not os.path.exists(pluginConfig["BackupFolderPath"]):
                     os.mkdir(pluginConfig["BackupFolderPath"])
 
                 # 压缩后的名字
-                zip = zipfile.ZipFile(zip_file_new, 'w', zipfile.ZIP_DEFLATED)
+                zip = zipfile.ZipFile(zip_file_new, "w", zipfile.ZIP_DEFLATED)
                 for dir_path, dir_names, file_names in os.walk(month_rank_dir):
                     # 去掉目标跟路径，只对目标文件夹下面的文件及文件夹进行压缩
-                    fpath = dir_path.replace(month_rank_dir, '')
+                    fpath = dir_path.replace(month_rank_dir, "")
                     for filename in file_names:
-                        zip.write(os.path.join(dir_path, filename), os.path.join(fpath, filename))
+                        zip.write(
+                            os.path.join(dir_path, filename),
+                            os.path.join(fpath, filename),
+                        )
                 zip.close()
-                print('该目录压缩成功！')
+                print("该目录压缩成功！")
 
                 # 清除tmp文件夹
                 if not os.path.exists(backup_tmp_path):
@@ -305,8 +322,7 @@ class EasyBackuperPlugin(Plugin):
                 else:
                     shutil.rmtree(backup_tmp_path)
             else:
-                print('您要压缩的目录不存在...')
-
+                print("您要压缩的目录不存在...")
 
         server.scheduler.run_task(plugin, save_query, delay=20, period=0)
         return None
