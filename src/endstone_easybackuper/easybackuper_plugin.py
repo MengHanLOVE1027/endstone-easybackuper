@@ -11,7 +11,7 @@ from endstone.plugin import Plugin
 plugin_name = "EasyBackuper"
 plugin_name_smallest = "easybackuper"
 plugin_description = "基于 LeviLamina - LSE引擎 的 最最最简单的JS热备份插件 / The simplest Python hot backup plugin based on EndStone."
-plugin_version = "0.3.0"
+plugin_version = "0.3.1"
 plugin_author = ["梦涵LOVE"]
 plugin_the_help_link = "https://www.minebbs.com/resources/easybackuper-eb.7771/"
 plugin_website = "https://minebbs.com"
