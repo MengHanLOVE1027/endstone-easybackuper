@@ -1,11 +1,15 @@
 # python 库
 import re, os, json, shutil, zipfile
+from asyncio import Server
 from pathlib import Path
 
 # endstone 库
 from endstone import ColorFormat, Player
 from endstone.command import Command, CommandSender, CommandSenderWrapper
 from endstone.plugin import Plugin
+from pyexpat.errors import messages
+
+import endstone_easybackuper
 
 # TAG: 全局常量
 plugin_name = "EasyBackuper"
@@ -232,7 +236,7 @@ class EasyBackuperPlugin(Plugin):
                 shutil.rmtree(backup_tmp_path)
             # 复制存档
             shutil.copytree(world_folder_path, backup_tmp_path / world_level_name)
-            server.dispatch_command(server.command_sender, "save resume")
+            assert server.dispatch_command(server.command_sender, "save resume")
 
             print(messages[1][0].split(", "))
             file_paths = messages[1][0].split(", ")
@@ -263,7 +267,7 @@ class EasyBackuperPlugin(Plugin):
                             print(f"文件已被截取到位置: {position}")
                             print(f"截取后的文件大小: {new_size} 字节")
                             server.logger.warning(
-                                f"文件大小减少了: {size_difference} 字节"
+                                f"文件大小变化了: {size_difference} 字节"
                             )
                         elif size_difference < 0:
                             print(real_file_name, position)
@@ -272,10 +276,16 @@ class EasyBackuperPlugin(Plugin):
                             print(f"文件已被截取到位置: {position}")
                             print(f"截取后的文件大小: {new_size} 字节")
                             server.logger.warning(
-                                f"文件大小减少了: {size_difference} 字节"
+                                f"文件大小变化了: {size_difference} 字节"
                             )
-                        # else:
-                        #     print(f"文件大小减少了: {size_difference} 字节")
+                        else:
+                            print(real_file_name, position)
+                            print(f"原始文件大小: {original_size} 字节")
+                            print(f"截取后的文件大小: {new_size} 字节")
+                            print(f"文件大小变化了: {size_difference} 字节")
+                            server.logger.info(
+                                f"文件大小变化了: {size_difference} 字节"
+                            )
 
                         return True  # 截取成功
 
@@ -408,30 +418,28 @@ class EasyBackuperPlugin(Plugin):
         if yes_no_console == 0:
             # 是玩家
             if broadcast_status:
-                print()
-                # Notice_Upper(broadcast_title, broadcast_subtitle)
+                print("通知即将开始!!!")
                 self.server.dispatch_command(
-                    self.server.command_sender, f"/title @a title {broadcast_title}"
+                    self.server.command_sender, f'/title @a title "{broadcast_title}"'
                 )
                 self.server.dispatch_command(
                     self.server.command_sender,
-                    f"/title @a subtitle {broadcast_subtitle}",
+                    f'/title @a subtitle "{broadcast_subtitle}"',
                 )
         elif yes_no_console == 1:
             # 是服务端
-            print()
-            # Notice_Upper(broadcast_server_title, broadcast_server_message)
+            print("通知即将开始!!!")
             self.server.dispatch_command(
-                self.server.command_sender, f"/title @a title {broadcast_server_title}"
+                self.server.command_sender, f'/title @a title "{broadcast_server_title}"'
             )
             self.server.dispatch_command(
                 self.server.command_sender,
-                f"/title @a subtitle {broadcast_server_subtitle}",
+                f'/title @a subtitle "{broadcast_server_subtitle}"',
             )
         return True
 
     # NOTE: 开始运行
-    def start(self) -> bool:
+    def start(self, sender) -> bool:
         """
         开始运行
         :return: True
@@ -439,37 +447,35 @@ class EasyBackuperPlugin(Plugin):
         # 导入全局变量
         global yes_no_console
 
+        self.server.logger.error(sender.name)
+
         # 判断指令执行者
         # 如果是 Server
-        if self.server.command_sender.name == "Server":
+        if sender.name == "Server":
             yes_no_console = 1
 
             self.notice()
+            self.logger.warning(sender.name)
             plugin_print("notice server")
-
-            # sender.send_message(sender.name)
-            # sender.send_message("I'm here.")
-            # sender.send_message(my_beautiful_text)
+            self.server.command_sender.send_message(my_beautiful_text)
             return True
         # 如果是 Player
-        elif isinstance(self.server.command_sender.name, Player):
+        elif isinstance(sender, Player):
             yes_no_console = 0
 
             self.notice()
+            self.logger.warning(sender.name)
             plugin_print("notice player")
-            # sender.send_message(sender.name)
-            # sender.send_message("I'm here.")
-            # sender.send_message(my_beautiful_text)
+            self.server.command_sender.send_message(my_beautiful_text)
             return True
         # 如果不是 Player 也不是 Server
         elif (
-            not isinstance(self.server.command_sender.name, Player)
-            and self.server.command_sender.name != "Server"
+            not isinstance(sender.name, Player)
+            and sender.name != "Server"
         ):
             self.server.command_sender.send_error_message(
                 "This command can only be executed by a player or console!"
             )
-            self.server.command_sender.send_message(my_beautiful_text)
             return False
 
     # TAG: 处理命令
@@ -494,7 +500,7 @@ class EasyBackuperPlugin(Plugin):
 
                 # 默认 /backup 指令后执行的代码
                 # 当玩家执行时检测并传参
-                self.start()
+                self.start(sender)
 
             # 如果长度是1或以上(这里只考虑整数，因为这里绝不可能会出现负数)，那么则判断其拥有附加参数
             else:
@@ -527,7 +533,7 @@ class EasyBackuperPlugin(Plugin):
                             )
 
                     # TODO: 重载配置文件
-                    case "refresh":
+                    case "reload":
                         self.logger.info("Hello EasyBackuper!")
                         self.logger.warning(plugin_path.name)
                         self.logger.warning(backup_tmp_path.name)
