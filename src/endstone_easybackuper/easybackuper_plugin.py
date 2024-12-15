@@ -1,21 +1,17 @@
 # python 库
 import re, os, json, shutil, zipfile
-from asyncio import Server
 from pathlib import Path
 
 # endstone 库
 from endstone import ColorFormat, Player
 from endstone.command import Command, CommandSender, CommandSenderWrapper
 from endstone.plugin import Plugin
-from pyexpat.errors import messages
-
-import endstone_easybackuper
 
 # TAG: 全局常量
 plugin_name = "EasyBackuper"
 plugin_name_smallest = "easybackuper"
 plugin_description = "基于 LeviLamina - LSE引擎 的 最最最简单的JS热备份插件 / The simplest Python hot backup plugin based on EndStone."
-plugin_version = "0.3.1"
+plugin_version = "0.3.0-beta"
 plugin_author = ["梦涵LOVE"]
 plugin_the_help_link = "https://www.minebbs.com/resources/easybackuper-eb.7771/"
 plugin_website = "https://minebbs.com"
