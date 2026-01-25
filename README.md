@@ -13,6 +13,8 @@
 - 📝 日志系统：完整的日志记录系统，支持多级别彩色输出，按日期分割存储
 - ⚡ 多线程备份：支持多线程文件复制与压缩，通过线程锁确保线程安全
 - 🗜️ 7z压缩：支持通过7za.exe进行高效压缩
+- 🌍 国际化支持：支持多语言界面，轻松切换不同语言
+- 📏 智能单位显示：备份文件大小自动选择合适单位显示（B/KB/MB/GB）
 
 ## 安装方法
 
@@ -38,7 +40,7 @@
 
 ```json
 {
-    "Language": "zh_CN",             // 语言设置
+    "Language": "zh_CN",             // 语言设置 (支持: zh_CN, en_US等)
     "exe_7z_path": "./plugins/EasyBackuper/7za.exe",  // 7z可执行文件路径
     "use_7z": false,                // 是否使用7z压缩(需要先下载7za.exe)
     "BackupFolderPath": "./backup",    // 备份文件保存路径
@@ -57,9 +59,9 @@
     "Broadcast": {                    // 广播配置
         "Status": true,               // 是否启用广播
         "Time_ms": 5000,             // 备份前通知时间(毫秒)
-        "Title": "[OP]要开始备份啦~",   // 备份前标题
+        "Title": "\\[OP\\]要开始备份啦~",   // 备份前标题
         "Message": "将于 5秒 后进行备份！", // 备份前消息
-        "Server_Title": "[Server]Neve Gonna Give You UP~", // 服务器备份前标题
+        "Server_Title": "\\[Server\\]Never Gonna Give You UP~", // 服务器备份前标题
         "Server_Message": "Never Gonna Let You Down~", // 服务器备份前消息
         "Backup_success_Title": "备份完成！", // 备份成功标题
         "Backup_success_Message": "星级服务，让爱连接", // 备份成功消息
@@ -144,6 +146,12 @@ A: 不可以。插件会阻止在备份过程中重载配置，以防止状态�
 
 **Q: 日志文件在哪里？**
 A: 日志文件保存在 `logs/EasyBackuper/` 目录下，按日期分割存储，文件名格式为 `easybackuper_YYYYMMDD.log`。
+
+**Q: 如何切换插件语言？**
+A: 在配置文件中修改 `"Language"` 值，支持的语言包括 `zh_CN`（简体中文）、`en_US`（英语）等。修改后执行 `/backup reload` 重载配置即可生效。
+
+**Q: 备份文件大小是如何显示的？**
+A: 备份完成后，插件会自动根据文件大小选择合适的单位进行显示，包括 B（字节）、KB（千字节）、MB（兆字节）和 GB（吉字节），方便快速了解备份文件大小。
 
 ## 许可证
 

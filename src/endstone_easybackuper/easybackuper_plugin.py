@@ -15,7 +15,7 @@ from endstone.plugin import Plugin
 plugin_name = "EasyBackuper"
 plugin_name_smallest = "easybackuper"
 plugin_description = "基于 EndStone 的最最最简单的Python热备份插件 / The simplest Python hot backup plugin based on EndStone."
-plugin_version = "0.4.0-beta"
+plugin_version = "0.4.1"
 plugin_author = ["梦涵LOVE"]
 plugin_the_help_link = "https://www.minebbs.com/resources/easybackuper-eb.7771/"
 plugin_website = "https://minebbs.com"
@@ -59,6 +59,27 @@ logging.basicConfig(
 
 # 创建插件专用的logger
 logger = logging.getLogger(plugin_name)
+
+# NOTE: 格式化文件大小
+def format_file_size(size_bytes: int) -> str:
+    """
+    格式化文件大小，自动选择合适的单位
+    :param size_bytes: 文件大小（字节）
+    :return: 格式化后的文件大小字符串
+    """
+    if size_bytes == 0:
+        return "0 B"
+
+    size_names = ["B", "KB", "MB", "GB", "TB"]
+    i = 0
+    size = float(size_bytes)
+
+    while size >= 1024 and i < len(size_names) - 1:
+        size /= 1024
+        i += 1
+
+    return f"{size:.2f} {size_names[i]}"
+
 
 # NOTE: 自制日志头
 def plugin_print(text, level="INFO") -> bool:
@@ -125,9 +146,9 @@ plugin_config_file = """
     "Broadcast": {
         "Status": true,
         "Time_ms": 5000,
-        "Title": "[OP]要开始备份啦~",
+        "Title": "\\\\[OP\\\\]要开始备份啦~",
         "Message": "将于 5秒 后进行备份！",
-        "Server_Title": "[Server]Neve Gonna Give You UP~",
+        "Server_Title": "\\\\[Server\\\\]Never Gonna Give You UP~",
         "Server_Message": "Never Gonna Let You Down~",
         "Backup_success_Title": "备份完成！",
         "Backup_success_Message": "星级服务，让爱连接",
@@ -139,6 +160,266 @@ plugin_config_file = """
     "Debug_MoreLogs_Cron": false
 }
 """
+
+# TAG: 默认翻译文件内容
+default_translations = {
+    "zh_CN": {
+        "easybackuper.auto_clean.disabled": "自动清理功能未启用",
+        "easybackuper.auto_clean.deleted": "已删除旧备份: %s",
+        "easybackuper.auto_clean.success": "清理成功，清理了: %s",
+        "easybackuper.auto_clean.failed": "自动清理备份失败: %s",
+        "easybackuper.auto_clean.clean": "本小姐看了一下，很干净捏~",
+        "easybackuper.backup.started": "自动备份已启动，间隔: %s秒",
+        "easybackuper.backup.start_failed": "启动自动备份失败: %s",
+        "easybackuper.backup.stopped": "自动备份已停止",
+        "easybackuper.backup.task_running": "已有备份任务正在进行中，跳过此次备份",
+        "easybackuper.backup.scheduled_task": "执行定时备份任务",
+        "easybackuper.backup.folder_not_exist": "备份文件夹不存在: %s",
+        "easybackuper.backup.broadcast_failed": "发送备份失败标题消息失败: %s",
+        "easybackuper.backup.broadcast_success_failed": "发送备份成功标题消息失败: %s",
+        "easybackuper.backup.error": "备份过程中发生错误: %s",
+        "easybackuper.backup.inited": "初始化完成",
+        "easybackuper.backup.reloaded": "重载完成",
+        "easybackuper.backup.reload_rejected": "正在备份中，拒绝重载配置文件",
+        "easybackuper.plugin.enabled": "%s 插件已启用！",
+        "easybackuper.plugin.start_clean": "正在执行开服清理...",
+        "easybackuper.plugin.disabling": "%s 插件即将禁用...",
+        "easybackuper.plugin.disabled": "%s 插件已禁用！",
+        "easybackuper.backup.paused": "正在暂停存档写入...",
+        "easybackuper.backup.resumed": "存档写入已恢复",
+        "easybackuper.backup.copying": "正在复制存档文件...",
+        "easybackuper.backup.copying_file": "正在复制文件: %s -> %s",
+        "easybackuper.backup.copy_failed": "复制文件失败 %s: %s",
+        "easybackuper.backup.tmp_cleared": "已清除临时文件夹",
+        "easybackuper.backup.query_result": "存档查询结果: %s",
+        "easybackuper.backup.not_ready": "存档未准备好，继续等待...",
+        "easybackuper.backup.truncating": "正在截取文件: %s",
+        "easybackuper.backup.original_size": "  原始大小: %s 字节",
+        "easybackuper.backup.truncate_position": "  截取位置: %s",
+        "easybackuper.backup.new_size": "  截取后大小: %s 字节",
+        "easybackuper.backup.size_decreased": "  文件大小变化: -%s 字节",
+        "easybackuper.backup.size_increased": "  文件大小变化: +%s 字节",
+        "easybackuper.backup.size_unchanged": "  文件大小无变化",
+        "easybackuper.backup.truncate_error": "截取文件时发生错误: %s",
+        "easybackuper.backup.truncate_exception": "截取文件异常 %s: %s",
+        "easybackuper.backup.compressing_7z": "正在使用7z压缩备份...",
+        "easybackuper.backup.compress_success": "该目录压缩成功！",
+        "easybackuper.backup.compress_failed": "压缩失败！",
+        "easybackuper.backup.dir_not_exist": "您要压缩的目录不存在...",
+        "easybackuper.backup.compressing": "正在压缩备份...",
+        "easybackuper.backup.add_file_failed": "添加文件到压缩包失败 %s: %s",
+        "easybackuper.backup.compress_exception": "压缩文件异常: %s",
+        "easybackuper.backup.success": "备份成功！\x1b[93m备份存档：%s (%s) \x1b[32m耗时: %s",
+        "easybackuper.broadcast.start": "开始备份力！",
+        "easybackuper.broadcast.failed": "备份失败！",
+        "easybackuper.broadcast.success": "备份成功！§e备份存档：%s (%s) §a耗时: %s",
+        "easybackuper.command.reload.success": "配置文件重载完成！",
+        "easybackuper.command.reload.reloading": "正在重载配置文件...",
+        "easybackuper.command.reload.auto_enabled": "自动备份已启用，将在下一个循环周期执行备份",
+        "easybackuper.command.start.starting": "正在启动自动备份...",
+        "easybackuper.command.start.success": "自动备份已启动！",
+        "easybackuper.command.start.failed": "自动备份启动失败，请检查配置文件！",
+        "easybackuper.command.stop.stopping": "正在停止自动备份...",
+        "easybackuper.command.stop.success": "自动备份已停止！",
+        "easybackuper.command.status.header": "===== 备份状态 =====",
+        "easybackuper.command.status.auto_backup": "自动备份状态: %s",
+        "easybackuper.command.status.auto_clean": "自动清理状态: %s",
+        "easybackuper.command.status.debug_console": "Debug日志(控制台): %s",
+        "easybackuper.command.status.debug_player": "Debug日志(玩家): %s",
+        "easybackuper.command.status.debug_cron": "Debug日志(Cron): %s",
+        "easybackuper.command.status.separator": "====================",
+        "easybackuper.command.status.enabled": "已启用",
+        "easybackuper.command.status.disabled": "未启用",
+        "easybackuper.command.clean.cleaning": "正在执行清理...",
+        "easybackuper.command.clean.success": "清理完成！",
+        "easybackuper.command.init.initializing": "正在初始化配置文件...",
+        "easybackuper.command.init.success": "配置文件初始化完成！",
+        "easybackuper.plugin.installed": "%s 安装成功！",
+        "easybackuper.plugin.version": "版本: %s",
+        "easybackuper.plugin.help": "查看帮助：%s",
+        "easybackuper.plugin.copyright": "务必保留原作者信息！",
+        "easybackuper.plugin.github": "GitHub 仓库：%s",
+        "easybackuper.plugin.status.auto_backup.enabled": "自动备份状态：已启用 (间隔: %s)",
+        "easybackuper.plugin.status.auto_backup.disabled": "自动备份状态：未启用",
+        "easybackuper.plugin.status.auto_clean.enabled": "自动清理状态：已启用 (最大保留: %s 个)",
+        "easybackuper.plugin.status.auto_clean.disabled": "自动清理状态：未启用",
+        "easybackuper.plugin.status.debug_console.enabled": "Debug更多日志状态(控制台)：已启用",
+        "easybackuper.plugin.status.debug_console.disabled": "Debug更多日志状态(控制台)：未启用",
+        "easybackuper.plugin.status.debug_player.enabled": "Debug更多日志状态(玩家)：已启用",
+        "easybackuper.plugin.status.debug_player.disabled": "Debug更多日志状态(玩家)：未启用",
+        "easybackuper.plugin.status.debug_cron.enabled": "Debug更多日志状态(Cron)：已启用",
+        "easybackuper.plugin.status.debug_cron.disabled": "Debug更多日志状态(Cron)：未启用",
+        "easybackuper.logo.author": "作者：",
+        "easybackuper.logo.version": "版本：",
+        "easybackuper.plugin.description": "基于 EndStone 的最最最简单的Python热备份插件",
+        "easybackuper.title.no_players": "没有玩家在线，跳过发送标题消息",
+        "easybackuper.lang.init": "初始化语言文件: %s",
+        "easybackuper.lang.init_failed": "初始化语言文件失败 %s: %s",
+        "easybackuper.copy.file_exception": "复制文件异常 %s: %s",
+        "easybackuper.compress.exception": "压缩文件异常: %s",
+        "easybackuper.compress.success": "该目录压缩成功！",
+        "easybackuper.compress.failed": "压缩失败！",
+        "easybackuper.title.send_failed": "发送标题消息给玩家 %s 失败: %s",
+        "easybackuper.lang.copied": "已复制语言文件: %s",
+        "easybackuper.backup.world_path": "存档路径: %s",
+        "easybackuper.lang.load_failed": "加载翻译文件失败 %s: %s",
+        "easybackuper.backup.truncate_list": "需要截取的文件列表: %s",
+        "easybackuper.backup.7z_command": "7z命令: %s",
+        "easybackuper.cron.unsupported_format": "不支持的cron表达式格式: %s",
+        "easybackuper.cron.parse_failed": "无法解析cron表达式: %s",
+        "easybackuper.restore.no_backups": "没有找到可用的备份文件",
+        "easybackuper.restore.list.header": "===== 可用备份列表 =====",
+        "easybackuper.restore.list.item": "§e[%d]§r %s (%s)",
+        "easybackuper.restore.list.footer": "=====================",
+        "easybackuper.restore.invalid_index": "无效的备份索引: %s",
+        "easybackuper.restore.confirm": "确认要回档到 §e%s§r 吗？此操作不可逆！",
+        "easybackuper.restore.confirming": "正在回档到备份: %s",
+        "easybackuper.restore.success": "回档成功！备份: %s",
+        "easybackuper.restore.failed": "回档失败: %s",
+        "easybackuper.restore.extracting": "正在解压备份: %s",
+        "easybackuper.restore.backuping_current": "正在备份当前存档...",
+        "easybackuper.restore.backup_current_success": "当前存档备份成功！",
+        "easybackuper.restore.backup_current_failed": "当前存档备份失败，继续回档...",
+        "easybackuper.restore.restoring": "正在恢复存档...",
+        "easybackuper.restore.restore_success": "存档恢复成功！",
+        "easybackuper.restore.restore_failed": "存档恢复失败: %s",
+        "easybackuper.restore.no_permission": "您没有权限执行此操作！",
+        "easybackuper.restore.usage": "用法: /backup restore [list|<索引>]",
+        "easybackuper.restore.file_not_found": "备份文件不存在: %s",
+        "easybackuper.restore.extract_failed": "解压备份失败: %s",
+        "easybackuper.restore.world_not_found": "存档文件夹不存在: %s",
+        "easybackuper.restore.backup_in_progress": "正在备份中，请等待备份完成后再回档！",
+        "easybackuper.restore.restore_in_progress": "正在回档中，请等待当前回档完成！"
+    },
+    "en_US": {
+        "easybackuper.auto_clean.disabled": "Auto clean feature is disabled",
+        "easybackuper.auto_clean.deleted": "Deleted old backup: %s",
+        "easybackuper.auto_clean.success": "Clean successful, cleaned: %s",
+        "easybackuper.auto_clean.failed": "Auto clean backup failed: %s",
+        "easybackuper.auto_clean.clean": "Looks clean to me~",
+        "easybackuper.backup.started": "Auto backup started, interval: %s seconds",
+        "easybackuper.backup.start_failed": "Failed to start auto backup: %s",
+        "easybackuper.backup.stopped": "Auto backup stopped",
+        "easybackuper.backup.task_running": "Backup task is already in progress, skipping this backup",
+        "easybackuper.backup.scheduled_task": "Executing scheduled backup task",
+        "easybackuper.backup.folder_not_exist": "Backup folder does not exist: %s",
+        "easybackuper.backup.broadcast_failed": "Failed to send backup failed title message: %s",
+        "easybackuper.backup.broadcast_success_failed": "Failed to send backup success title message: %s",
+        "easybackuper.backup.error": "Error during backup: %s",
+        "easybackuper.backup.inited": "inited.",
+        "easybackuper.backup.reloaded": "reloaded.",
+        "easybackuper.backup.reload_rejected": "Backup in progress, refusing to reload config",
+        "easybackuper.plugin.enabled": "%s plugin enabled!",
+        "easybackuper.plugin.start_clean": "Starting server clean...",
+        "easybackuper.plugin.disabling": "%s plugin about to disable...",
+        "easybackuper.plugin.disabled": "%s plugin disabled!",
+        "easybackuper.backup.paused": "Pausing save writes...",
+        "easybackuper.backup.resumed": "Save writes resumed",
+        "easybackuper.backup.copying": "Copying world files...",
+        "easybackuper.backup.copying_file": "Copying file: %s -> %s",
+        "easybackuper.backup.copy_failed": "Failed to copy file %s: %s",
+        "easybackuper.backup.tmp_cleared": "Temporary folder cleared",
+        "easybackuper.backup.query_result": "Save query result: %s",
+        "easybackuper.backup.not_ready": "Save not ready, continuing to wait...",
+        "easybackuper.backup.truncating": "Truncating file: %s",
+        "easybackuper.backup.original_size": "  Original size: %s bytes",
+        "easybackuper.backup.truncate_position": "  Truncate position: %s",
+        "easybackuper.backup.new_size": "  Truncated size: %s bytes",
+        "easybackuper.backup.size_decreased": "  File size change: -%s bytes",
+        "easybackuper.backup.size_increased": "  File size change: +%s bytes",
+        "easybackuper.backup.size_unchanged": "  File size unchanged",
+        "easybackuper.backup.truncate_error": "Error truncating file: %s",
+        "easybackuper.backup.truncate_exception": "Truncate file exception %s: %s",
+        "easybackuper.backup.compressing_7z": "Compressing backup with 7z...",
+        "easybackuper.backup.compress_success": "Directory compressed successfully!",
+        "easybackuper.backup.compress_failed": "Compression failed!",
+        "easybackuper.backup.dir_not_exist": "The directory you want to compress does not exist...",
+        "easybackuper.backup.compressing": "Compressing backup...",
+        "easybackuper.backup.add_file_failed": "Failed to add file to archive %s: %s",
+        "easybackuper.backup.compress_exception": "Compress file exception: %s",
+        "easybackuper.backup.success": "Backup successful! \x1b[93mArchive: %s (%s) \x1b[32mTime: %s",
+        "easybackuper.broadcast.start": "Starting backup!",
+        "easybackuper.broadcast.failed": "Backup failed!",
+        "easybackuper.broadcast.success": "Backup successful! §eArchive: %s (%s) §aTime: %s",
+        "easybackuper.command.reload.success": "Configuration file reloaded successfully!",
+        "easybackuper.command.reload.reloading": "Reloading configuration file...",
+        "easybackuper.command.reload.auto_enabled": "Auto backup is enabled and will run in the next cycle",
+        "easybackuper.command.start.starting": "Starting auto backup...",
+        "easybackuper.command.start.success": "Auto backup started!",
+        "easybackuper.command.start.failed": "Failed to start auto backup, please check the configuration file!",
+        "easybackuper.command.stop.stopping": "Stopping auto backup...",
+        "easybackuper.command.stop.success": "Auto backup stopped!",
+        "easybackuper.command.status.header": "===== Backup Status =====",
+        "easybackuper.command.status.auto_backup": "Auto backup status: %s",
+        "easybackuper.command.status.auto_clean": "Auto clean status: %s",
+        "easybackuper.command.status.debug_console": "Debug logs (Console): %s",
+        "easybackuper.command.status.debug_player": "Debug logs (Player): %s",
+        "easybackuper.command.status.debug_cron": "Debug logs (Cron): %s",
+        "easybackuper.command.status.separator": "====================",
+        "easybackuper.command.status.enabled": "Enabled",
+        "easybackuper.command.status.disabled": "Disabled",
+        "easybackuper.command.clean.cleaning": "Cleaning...",
+        "easybackuper.command.clean.success": "Cleaning completed!",
+        "easybackuper.command.init.initializing": "Initializing configuration files...",
+        "easybackuper.command.init.success": "Configuration files initialized successfully!",
+        "easybackuper.plugin.installed": "%s installed successfully!",
+        "easybackuper.plugin.version": "Version: %s",
+        "easybackuper.plugin.help": "View help: %s",
+        "easybackuper.plugin.copyright": "Please keep the original author information!",
+        "easybackuper.plugin.github": "GitHub repository: %s",
+        "easybackuper.plugin.status.auto_backup.enabled": "Auto backup status: Enabled (interval: %s)",
+        "easybackuper.plugin.status.auto_backup.disabled": "Auto backup status: Disabled",
+        "easybackuper.plugin.status.auto_clean.enabled": "Auto clean status: Enabled (max keep: %s)",
+        "easybackuper.plugin.status.auto_clean.disabled": "Auto clean status: Disabled",
+        "easybackuper.plugin.status.debug_console.enabled": "Debug more logs (Console): Enabled",
+        "easybackuper.plugin.status.debug_console.disabled": "Debug more logs (Console): Disabled",
+        "easybackuper.plugin.status.debug_player.enabled": "Debug more logs (Player): Enabled",
+        "easybackuper.plugin.status.debug_player.disabled": "Debug more logs (Player): Disabled",
+        "easybackuper.plugin.status.debug_cron.enabled": "Debug more logs (Cron): Enabled",
+        "easybackuper.plugin.status.debug_cron.disabled": "Debug more logs (Cron): Disabled",
+        "easybackuper.logo.author": "Author: ",
+        "easybackuper.logo.version": "Version: ",
+        "easybackuper.plugin.description": "The simplest Python hot backup plugin based on EndStone",
+        "easybackuper.title.no_players": "No players online, skipping title message",
+        "easybackuper.lang.init": "Initializing language file: %s",
+        "easybackuper.lang.init_failed": "Failed to initialize language file %s: %s",
+        "easybackuper.copy.file_exception": "Copy file exception %s: %s",
+        "easybackuper.compress.exception": "Compress file exception: %s",
+        "easybackuper.compress.success": "Directory compressed successfully!",
+        "easybackuper.compress.failed": "Compression failed!",
+        "easybackuper.title.send_failed": "Failed to send title message to player %s: %s",
+        "easybackuper.lang.copied": "Copied language file: %s",
+        "easybackuper.backup.world_path": "World path: %s",
+        "easybackuper.lang.load_failed": "Failed to load translation file %s: %s",
+        "easybackuper.backup.truncate_list": "Files to truncate: %s",
+        "easybackuper.backup.7z_command": "7z command: %s",
+        "easybackuper.cron.unsupported_format": "Unsupported cron expression format: %s",
+        "easybackuper.cron.parse_failed": "Failed to parse cron expression: %s",
+        "easybackuper.restore.no_backups": "No available backup files found",
+        "easybackuper.restore.list.header": "===== Available Backups =====",
+        "easybackuper.restore.list.item": "§e[%d]§r %s (%s)",
+        "easybackuper.restore.list.footer": "=====================",
+        "easybackuper.restore.invalid_index": "Invalid backup index: %s",
+        "easybackuper.restore.confirm": "Confirm restore to §e%s§r? This action cannot be undone!",
+        "easybackuper.restore.confirming": "Restoring to backup: %s",
+        "easybackuper.restore.success": "Restore successful! Backup: %s",
+        "easybackuper.restore.failed": "Restore failed: %s",
+        "easybackuper.restore.extracting": "Extracting backup: %s",
+        "easybackuper.restore.backuping_current": "Backing up current world...",
+        "easybackuper.restore.backup_current_success": "Current world backup successful!",
+        "easybackuper.restore.backup_current_failed": "Current world backup failed, continuing restore...",
+        "easybackuper.restore.restoring": "Restoring world...",
+        "easybackuper.restore.restore_success": "World restore successful!",
+        "easybackuper.restore.restore_failed": "World restore failed: %s",
+        "easybackuper.restore.no_permission": "You don't have permission to perform this action!",
+        "easybackuper.restore.usage": "Usage: /backup restore [list|<index>]",
+        "easybackuper.restore.file_not_found": "Backup file not found: %s",
+        "easybackuper.restore.extract_failed": "Failed to extract backup: %s",
+        "easybackuper.restore.world_not_found": "World folder not found: %s",
+        "easybackuper.restore.backup_in_progress": "Backup in progress, please wait for backup to complete before restoring!",
+        "easybackuper.restore.restore_in_progress": "Restore in progress, please wait for current restore to complete!"
+    }
+}
 # 检查插件文件路径，以防后续出问题
 if not plugin_path.exists():
     # print(f"文件夹 '{plugin_path.resolve()}' 不存在。")
@@ -256,14 +537,83 @@ class EasyBackuperPlugin(Plugin):
         self.backup_task_id = None  # 存储备份任务ID
         self.scheduled_backup_enabled = False  # 自动备份状态
         self.is_backing_up = False  # 是否正在备份
+        self.translations = {}  # 存储翻译字典
+        self.load_translations(init_lang_files=True)  # 加载翻译文件并初始化语言文件
+
+    def load_translations(self, init_lang_files: bool = False) -> None:
+        """
+        加载翻译文件
+        :param init_lang_files: 是否初始化语言文件（将默认翻译写入文件）
+        :return: None
+        """
+        global default_translations
+        
+        # 翻译文件放在插件配置文件夹下的langs文件夹
+        lang_dir = plugin_path / "langs"
+
+        # 确保语言目录存在
+        lang_dir.mkdir(parents=True, exist_ok=True)
+        
+        # 如果需要初始化语言文件，则将默认翻译写入文件
+        if init_lang_files:
+            for lang, translations in default_translations.items():
+                lang_file = lang_dir / f"{lang}.json"
+                try:
+                    with open(lang_file, "w", encoding="utf-8") as f:
+                        json.dump({lang: translations}, f, indent=4, ensure_ascii=False)
+                    plugin_print(self.translate('easybackuper.lang.init', str(lang_file)), level="INFO")
+                except Exception as e:
+                    plugin_print(self.translate('easybackuper.lang.init_failed', str(lang_file), str(e)), level="ERROR")
+        
+
+        
+        # 加载所有语言文件
+        self.translations = {}
+        for lang_file in lang_dir.glob("*.json"):
+            try:
+                with open(lang_file, "r", encoding="utf-8") as f:
+                    lang_data = json.load(f)
+                    # 合并翻译数据，确保按语言分类
+                    for lang, translations in lang_data.items():
+                        if lang not in self.translations:
+                            self.translations[lang] = {}
+                        self.translations[lang].update(translations)
+            except Exception as e:
+                plugin_print(self.translate("easybackuper.lang.load_failed", str(lang_file), str(e)), level="ERROR")
+
+    def translate(self, key: str, *args) -> str:
+        """
+        翻译文本
+        :param key: 翻译键
+        :param args: 格式化参数
+        :return: 翻译后的文本
+        """
+        # 获取配置文件中的语言设置
+        language = pluginConfig.get("Language", "zh_CN")
+        
+        # 从翻译字典中获取对应语言的翻译
+        if language in self.translations:
+            text = self.translations[language].get(key, key)
+        else:
+            # 如果语言不存在，尝试使用中文
+            text = self.translations.get("zh_CN", {}).get(key, key)
+        
+        # 如果有参数，进行格式化
+        if args:
+            try:
+                return text % args
+            except (TypeError, ValueError):
+                return text
+        
+        return text
 
     # NOTE: #2备份功能
-    def backup_2(plugin: Plugin) -> None:
+    def backup_2(self) -> None:
         """
         备份功能第二部分
         :return: None
         """
-        server = plugin.server
+        server = self.server
 
         # 记录备份开始时间
         backup_start_time = time.time()
@@ -271,7 +621,7 @@ class EasyBackuperPlugin(Plugin):
         try:
             # 备份完成后重置备份状态
             def reset_backup_status():
-                plugin.is_backing_up = False
+                self.is_backing_up = False
 
             # 7z相关功能
             use_7z = pluginConfig["use_7z"]
@@ -279,7 +629,7 @@ class EasyBackuperPlugin(Plugin):
 
             # 暂停存档写入
             assert server.dispatch_command(server.command_sender, "save hold")
-            plugin_print("正在暂停存档写入...", level="INFO")
+            plugin_print(self.translate("easybackuper.backup.paused"), level="INFO")
 
             def save_query():
                 messages = []
@@ -292,21 +642,21 @@ class EasyBackuperPlugin(Plugin):
 
                 ready = server.dispatch_command(sender, "save query")
                 if not ready:
-                    plugin_print("存档未准备好，继续等待...", level="WARNING")
+                    plugin_print(self.translate("easybackuper.backup.not_ready"), level="WARNING")
                     assert server.dispatch_command(server.command_sender, "save resume")
                     return
 
                 if Debug_MoreLogs:
-                    plugin_print(f"存档查询结果: {messages}", level="DEBUG")
+                    plugin_print(self.translate("easybackuper.backup.query_result", str(messages)), level="DEBUG")
 
                 # 清除tmp文件夹
                 if not os.path.exists(backup_tmp_path):
                     os.mkdir(backup_tmp_path)
                 else:
                     shutil.rmtree(backup_tmp_path)
-                    plugin_print("已清除临时文件夹", level="DEBUG")
+                    plugin_print(self.translate("easybackuper.backup.tmp_cleared"), level="DEBUG")
                 # 复制存档
-                plugin_print("正在复制存档文件...", level="INFO")
+                plugin_print(self.translate("easybackuper.backup.copying"), level="INFO")
                 
                 # 多线程复制单个文件
                 def copy_file(src_path, dst_path):
@@ -315,11 +665,11 @@ class EasyBackuperPlugin(Plugin):
                     """
                     try:
                         if Debug_MoreLogs:
-                            plugin_print(f"正在复制文件: {src_path} -> {dst_path}", level="DEBUG")
+                            plugin_print(self.translate("easybackuper.backup.copying_file", src_path, dst_path), level="DEBUG")
                         shutil.copy2(src_path, dst_path)
                         return True
                     except Exception as e:
-                        plugin_print(f"复制文件失败 {src_path}: {e}", level="ERROR")
+                        plugin_print(self.translate("easybackuper.backup.copy_failed", src_path, str(e)), level="ERROR")
                         return False
                 
                 # 收集所有需要复制的文件
@@ -361,7 +711,7 @@ class EasyBackuperPlugin(Plugin):
                             try:
                                 future.result()
                             except Exception as e:
-                                plugin_print(f"复制文件异常 {src_path}: {e}", level="ERROR")
+                                plugin_print(self.translate('easybackuper.copy.file_exception', str(src_path), str(e)), level="ERROR")
                 
                 # 递归复制目录，显示每个文件的操作（保留原函数作为备用）
                 def copy_directory_with_progress(src, dst):
@@ -381,7 +731,7 @@ class EasyBackuperPlugin(Plugin):
                         else:
                             # 如果是文件，复制文件
                             if Debug_MoreLogs:
-                                plugin_print(f"正在复制文件: {src_path} -> {dst_path}", level="DEBUG")
+                                plugin_print(self.translate("easybackuper.backup.copying_file", src_path, dst_path), level="DEBUG")
                             shutil.copy2(src_path, dst_path)
 
                 # 创建目标目录
@@ -389,10 +739,10 @@ class EasyBackuperPlugin(Plugin):
                 # 开始复制（使用多线程）
                 copy_directory_multithread(str(world_folder_path), str(backup_tmp_path / world_level_name))
                 assert server.dispatch_command(server.command_sender, "save resume")
-                plugin_print("存档写入已恢复", level="INFO")
+                plugin_print(self.translate("easybackuper.backup.resumed"), level="INFO")
 
                 if Debug_MoreLogs:
-                    plugin_print(f"需要截取的文件列表: {messages[1][0].split(", ")}", level="DEBUG")
+                    plugin_print(self.translate("easybackuper.backup.truncate_list", messages[1][0].split(", ")), level="DEBUG")
                 file_paths = messages[1][0].split(", ")
 
                 # 截取文件
@@ -416,30 +766,30 @@ class EasyBackuperPlugin(Plugin):
                             size_difference = original_size - new_size
                             if size_difference > 0:
                                 if Debug_MoreLogs:
-                                    plugin_print(f"正在截取文件: {file_path}", level="DEBUG")
-                                    plugin_print(f"  原始大小: {original_size} 字节", level="DEBUG")
-                                    plugin_print(f"  截取位置: {position}", level="DEBUG")
-                                    plugin_print(f"  截取后大小: {new_size} 字节", level="DEBUG")
-                                    plugin_print(f"  文件大小变化: -{size_difference} 字节", level="WARNING")
+                                    plugin_print(self.translate("easybackuper.backup.truncating", file_path), level="DEBUG")
+                                    plugin_print(self.translate("easybackuper.backup.original_size", original_size), level="DEBUG")
+                                    plugin_print(self.translate("easybackuper.backup.truncate_position", position), level="DEBUG")
+                                    plugin_print(self.translate("easybackuper.backup.new_size", new_size), level="DEBUG")
+                                    plugin_print(self.translate("easybackuper.backup.size_decreased", size_difference), level="WARNING")
                             elif size_difference < 0:
                                 if Debug_MoreLogs:
-                                    plugin_print(f"正在截取文件: {file_path}", level="DEBUG")
-                                    plugin_print(f"  原始大小: {original_size} 字节", level="DEBUG")
-                                    plugin_print(f"  截取位置: {position}", level="DEBUG")
-                                    plugin_print(f"  截取后大小: {new_size} 字节", level="DEBUG")
-                                    plugin_print(f"  文件大小变化: +{abs(size_difference)} 字节", level="WARNING")
+                                    plugin_print(self.translate("easybackuper.backup.truncating", file_path), level="DEBUG")
+                                    plugin_print(self.translate("easybackuper.backup.original_size", original_size), level="DEBUG")
+                                    plugin_print(self.translate("easybackuper.backup.truncate_position", position), level="DEBUG")
+                                    plugin_print(self.translate("easybackuper.backup.new_size", new_size), level="DEBUG")
+                                    plugin_print(self.translate("easybackuper.backup.size_increased", abs(size_difference)), level="WARNING")
                             else:
                                 if Debug_MoreLogs:
-                                    plugin_print(f"正在截取文件: {file_path}", level="DEBUG")
-                                    plugin_print(f"  原始大小: {original_size} 字节", level="DEBUG")
-                                    plugin_print(f"  截取后大小: {new_size} 字节", level="DEBUG")
-                                    plugin_print(f"  文件大小无变化", level="INFO")
+                                    plugin_print(self.translate("easybackuper.backup.truncating", file_path), level="DEBUG")
+                                    plugin_print(self.translate("easybackuper.backup.original_size", original_size), level="DEBUG")
+                                    plugin_print(self.translate("easybackuper.backup.new_size", new_size), level="DEBUG")
+                                    plugin_print(self.translate("easybackuper.backup.size_unchanged"), level="INFO")
 
                             return True  # 截取成功
 
                     except Exception as e:
                         # 如果在截取过程中出现错误，打印错误信息
-                        plugin_print(f"截取文件时发生错误: {e}", level="ERROR")
+                        plugin_print(self.translate("easybackuper.backup.truncate_error", str(e)), level="ERROR")
                         return False  # 截取失败
                 
                 # 使用多线程截取文件
@@ -467,7 +817,7 @@ class EasyBackuperPlugin(Plugin):
                             try:
                                 future.result()
                             except Exception as e:
-                                plugin_print(f"截取文件异常 {file_path}: {e}", level="ERROR")
+                                plugin_print(self.translate("easybackuper.backup.truncate_exception", file_path, str(e)), level="ERROR")
                 
                 # 执行多线程截取
                 truncate_files_multithread(file_paths)
@@ -496,20 +846,20 @@ class EasyBackuperPlugin(Plugin):
                 # 是否使用7z来备份
                 if use_7z:
                     if os.path.exists(month_rank_dir):
-                        plugin_print("正在使用7z压缩备份...", level="INFO")
+                        plugin_print(self.translate("easybackuper.backup.compressing_7z"), level="INFO")
 
                         if not os.path.exists(pluginConfig["BackupFolderPath"]):
                             os.mkdir(pluginConfig["BackupFolderPath"])
 
                         # 压缩后的名字
                         path = str(exe_7z_path) + " a -tzip " + '"' + zip_file_new + '" ' + '"./' + month_rank_dir + '/*"'
-                        print(path)
+                        plugin_print(self.translate("easybackuper.backup.7z_command", path), level="DEBUG")
                         result = os.system(path)
                         if result == 0:
-                            plugin_print("该目录压缩成功！", level="SUCCESS")
+                            plugin_print(self.translate("easybackuper.backup.compress_success"), level="SUCCESS")
                         else:
-                            plugin_print("压缩失败！", level="ERROR")
-                            plugin.broadcast_backup_wrong()
+                            plugin_print(self.translate("easybackuper.backup.compress_failed"), level="ERROR")
+                            self.broadcast_backup_wrong()
 
                         # 清除tmp文件夹
                         if not os.path.exists(backup_tmp_path):
@@ -517,11 +867,11 @@ class EasyBackuperPlugin(Plugin):
                         else:
                             shutil.rmtree(backup_tmp_path)
                     else:
-                        plugin_print("您要压缩的目录不存在...", level="ERROR")
-                        plugin.broadcast_backup_wrong()
+                        plugin_print(self.translate("easybackuper.backup.dir_not_exist"), level="ERROR")
+                        self.broadcast_backup_wrong()
                 else:
                     if os.path.exists(month_rank_dir):
-                        plugin_print("正在压缩备份...", level="INFO")
+                        plugin_print(self.translate("easybackuper.backup.compressing"), level="INFO")
 
                         if not os.path.exists(pluginConfig["BackupFolderPath"]):
                             os.mkdir(pluginConfig["BackupFolderPath"])
@@ -555,7 +905,7 @@ class EasyBackuperPlugin(Plugin):
                                         zip_file.writestr(arc_path, file_data)
                                     return True
                                 except Exception as e:
-                                    plugin_print(f"添加文件到压缩包失败 {src_path}: {e}", level="ERROR")
+                                    plugin_print(self.translate("easybackuper.backup.add_file_failed", src_path, str(e)), level="ERROR")
                                     return False
                             
                             # 使用线程锁保护zip文件写入
@@ -577,12 +927,12 @@ class EasyBackuperPlugin(Plugin):
                                         try:
                                             future.result()
                                         except Exception as e:
-                                            plugin_print(f"压缩文件异常: {e}", level="ERROR")
+                                            plugin_print(self.translate('easybackuper.compress.exception', str(e)), level="ERROR")
                             
-                            plugin_print("该目录压缩成功！", level="SUCCESS")
+                            plugin_print(self.translate('easybackuper.compress.success'), level="SUCCESS")
                         except Exception as e:
-                            plugin_print("压缩失败！", level="ERROR")
-                            plugin.broadcast_backup_wrong()
+                            plugin_print(self.translate('easybackuper.compress.failed'), level="ERROR")
+                            self.broadcast_backup_wrong()
 
                         # 清除tmp文件夹
                         if not os.path.exists(backup_tmp_path):
@@ -590,8 +940,8 @@ class EasyBackuperPlugin(Plugin):
                         else:
                             shutil.rmtree(backup_tmp_path)
                     else:
-                        plugin_print("您要压缩的目录不存在...", level="ERROR")
-                        plugin.broadcast_backup_wrong()
+                        plugin_print(self.translate("easybackuper.backup.dir_not_exist"), level="ERROR")
+                        self.broadcast_backup_wrong()
 
                 # 备份成功后广播通知
                 # 计算备份文件大小和耗时
@@ -601,40 +951,40 @@ class EasyBackuperPlugin(Plugin):
 
                 # 格式化备份耗时
                 if backup_elapsed < 60:
-                    backup_time_str = f"{backup_elapsed:.2f}秒"
+                    backup_time_str = f"{backup_elapsed:.2f}s"
                 elif backup_elapsed < 3600:
-                    backup_time_str = f"{backup_elapsed / 60:.2f}分钟"
+                    backup_time_str = f"{backup_elapsed / 60:.2f}min"
                 else:
-                    backup_time_str = f"{backup_elapsed / 3600:.2f}小时"
+                    backup_time_str = f"{backup_elapsed / 3600:.2f}h"
 
                 if archive_path.exists():
                     archive_size = archive_path.stat().st_size
-                    archive_size_mb = f"{archive_size / (1024 * 1024):.2f}"
+                    archive_size_formatted = format_file_size(archive_size)
 
                     # 根据Mode 1执行自动清理
                     if use_number_detection_mode == 1:
-                        plugin.auto_clean_backups()
+                        self.auto_clean_backups()
 
                     # 广播备份成功消息
-                    plugin.broadcast_backup_success(archive_name, archive_size_mb, backup_time_str)
+                    self.broadcast_backup_success(archive_name, archive_size_formatted, backup_time_str)
                 else:
                     # 根据Mode 1执行自动清理
                     if use_number_detection_mode == 1:
-                        plugin.auto_clean_backups()
+                        self.auto_clean_backups()
 
                     # 广播备份成功消息
-                    plugin.broadcast_backup_success(backup_time=backup_time_str)
+                    self.broadcast_backup_success(backup_time=backup_time_str)
 
                 # 重置备份状态
                 reset_backup_status()
 
         except Exception as e:
             # 备份失败时重置备份状态
-            plugin.logger.error(f"备份过程中发生错误: {e}")
-            plugin_print(f"备份过程中发生错误: {e}", level="ERROR")
+            self.logger.error(self.translate("easybackuper.backup.error", str(e)))
+            plugin_print(self.translate("easybackuper.backup.error", str(e)), level="ERROR")
             reset_backup_status()
 
-        server.scheduler.run_task(plugin, save_query, delay=20, period=0)
+        server.scheduler.run_task(self, save_query, delay=20, period=0)
         return None
 
     # NOTE: 自动备份功能
@@ -709,11 +1059,11 @@ class EasyBackuperPlugin(Plugin):
                         interval = months * 2592000  # 月转秒（按30天计算）
                     else:
                         # 如果没有匹配到任何格式，抛出异常
-                        raise ValueError(f"不支持的cron表达式格式: {cronExpr}")
+                        raise ValueError(self.translate("easybackuper.cron.unsupported_format", cronExpr))
 
             # 检查是否成功解析出间隔
             if interval == 0:
-                raise ValueError(f"无法解析cron表达式: {cronExpr}")
+                raise ValueError(self.translate("easybackuper.cron.parse_failed", cronExpr))
 
             # 将秒转换为tick（20 ticks = 1秒）
             interval_ticks = interval * 20
@@ -727,13 +1077,11 @@ class EasyBackuperPlugin(Plugin):
             )
 
             self.scheduled_backup_enabled = True
-            self.logger.info(f"自动备份已启动，间隔: {interval}秒")
-            plugin_print(f"自动备份已启动，间隔: {interval}秒")
+            plugin_print(self.translate("easybackuper.backup.started", interval), level="INFO")
             return True
 
         except Exception as e:
-            self.logger.error(f"启动自动备份失败: {e}")
-            plugin_print(f"启动自动备份失败: {e}")
+            plugin_print(self.translate("easybackuper.backup.start_failed", str(e)), level="ERROR")
             return False
 
     def stop_scheduled_backup(self) -> None:
@@ -746,8 +1094,7 @@ class EasyBackuperPlugin(Plugin):
             self.backup_task_id.cancel()
             self.backup_task_id = None
             self.scheduled_backup_enabled = False
-            self.logger.info("自动备份已停止")
-            plugin_print("自动备份已停止")
+            plugin_print(self.translate("easybackuper.backup.stopped"), level="INFO")
 
     def scheduled_backup_task(self) -> None:
         """
@@ -755,8 +1102,7 @@ class EasyBackuperPlugin(Plugin):
         :return: None
         """
         if Debug_MoreLogs_Cron:
-            self.logger.info("执行定时备份任务")
-            plugin_print("执行定时备份任务")
+            plugin_print(self.translate("easybackuper.backup.scheduled_task"), level="INFO")
 
         # 执行备份
         self.backup()
@@ -771,15 +1117,14 @@ class EasyBackuperPlugin(Plugin):
 
         if not use_number_detection_status:
             if Debug_MoreLogs:
-                self.logger.info("自动清理功能未启用")
-                plugin_print("自动清理功能未启用")
+                plugin_print(self.translate("easybackuper.auto_clean.disabled"), level="INFO")
             return
 
         try:
             backup_folder = Path(pluginConfig["BackupFolderPath"])
             if not backup_folder.exists():
                 if Debug_MoreLogs:
-                    self.logger.warning(f"备份文件夹不存在: {backup_folder}")
+                    plugin_print(self.translate("easybackuper.backup.folder_not_exist", backup_folder), level="WARNING")
                 return
 
             # 获取所有备份文件
@@ -794,7 +1139,7 @@ class EasyBackuperPlugin(Plugin):
             files_to_delete = len(backup_files) - use_number_detection_max_number
 
             if files_to_delete <= 0:
-                plugin_print("本小姐看了一下，很干净捏~")
+                plugin_print(self.translate("easybackuper.auto_clean.clean"))
                 return
 
             # 根据模式删除文件
@@ -809,16 +1154,13 @@ class EasyBackuperPlugin(Plugin):
                     file_to_delete.unlink()
                     deleted_files.append(file_to_delete.name)
                     if Debug_MoreLogs:
-                        self.logger.info(f"已删除旧备份: {file_to_delete.name}")
-                        plugin_print(f"已删除旧备份: {file_to_delete.name}")
+                        plugin_print(self.translate("easybackuper.auto_clean.deleted", file_to_delete.name), level="INFO")
 
                 if deleted_files:
-                    self.logger.info(f"清理成功，清理了: {', '.join(deleted_files)}")
-                    plugin_print(f"清理成功，清理了: {', '.join(deleted_files)}")
+                    plugin_print(self.translate("easybackuper.auto_clean.success", ', '.join(deleted_files)), level="INFO")
 
         except Exception as e:
-            self.logger.error(f"自动清理备份失败: {e}")
-            plugin_print(f"自动清理备份失败: {e}")
+            plugin_print(self.translate("easybackuper.auto_clean.failed", str(e)), level="ERROR")
 
     # NOTE: #1备份功能
     def backup(self) -> None:
@@ -828,8 +1170,7 @@ class EasyBackuperPlugin(Plugin):
         """
         # 检查是否正在备份
         if self.is_backing_up:
-            self.logger.warning("已有备份任务正在进行中，跳过此次备份")
-            plugin_print("已有备份任务正在进行中，跳过此次备份")
+            plugin_print(self.translate("easybackuper.backup.task_running"), level="WARNING")
             return None
 
         # 设置备份状态为正在进行
@@ -858,18 +1199,42 @@ class EasyBackuperPlugin(Plugin):
         # 如果开启广播功能则进行广播
         if broadcast_status:
             self.server.broadcast(
-                "§2§l[EasyBackuper]§r§3开始备份力！",
+                "§2§l[EasyBackuper]§r§3" + self.translate('easybackuper.broadcast.start'),
                 "easybackuper_plugin.command.players",
             )
 
         # 局部变量
-        plugin_print(world_folder_path)
+        plugin_print(self.translate("easybackuper.backup.world_path", str(world_folder_path)), level="DEBUG")
 
         # 延时执行备份
         delay_ticks = int(broadcast_time_ms / 1000 * 20)
         self.server.scheduler.run_task(self, self.backup_2, delay=delay_ticks, period=0)
 
         return None
+
+    # NOTE: 发送标题消息给在线玩家
+    def send_title_to_players(self, title: str, subtitle: str = "") -> None:
+        """
+        发送标题消息给在线玩家
+        :param title: 标题
+        :param subtitle: 副标题
+        :return: None
+        """
+        # 获取在线玩家列表
+        online_players = self.server.online_players
+
+        # 如果没有玩家在线，则不发送
+        if not online_players:
+            plugin_print(self.translate('easybackuper.title.no_players'), level="WARNING")
+            return
+
+        # 遍历所有在线玩家，发送标题消息
+        for player in online_players:
+            try:
+                player.send_title(title, subtitle)
+            except Exception as e:
+                if Debug_MoreLogs:
+                    plugin_print(self.translate('easybackuper.title.send_failed', player.name, str(e)), level="ERROR")
 
     # NOTE: 广播备份失败消息
     def broadcast_backup_wrong(self) -> None:
@@ -893,29 +1258,17 @@ class EasyBackuperPlugin(Plugin):
                 "easybackuper_plugin.command.players",
             )
 
-            plugin_print("§2§l[EasyBackuper]§r§c备份失败！", level="ERROR")
+            plugin_print(self.translate("easybackuper.broadcast.failed"), level="ERROR")
 
             # 发送标题消息
-            try:
-                self.server.dispatch_command(
-                    self.server.command_sender, 
-                    f'/title @a title {broadcast_backup_wrong_title}'
-                )
-                self.server.dispatch_command(
-                    self.server.command_sender,
-                    f'/title @a subtitle {broadcast_backup_wrong_message}',
-                )
-            except Exception as e:
-                if Debug_MoreLogs:
-                    self.logger.error(f"发送备份失败标题消息失败: {e}")
-                    plugin_print(f"发送备份失败标题消息失败: {e}")
+            self.send_title_to_players(broadcast_backup_wrong_title, broadcast_backup_wrong_message)
 
     # NOTE: 广播备份成功消息
     def broadcast_backup_success(self, archive_name: str = "", archive_size_mb: str = "0.00", backup_time: str = "") -> None:
         """
         广播备份成功消息
         :param archive_name: 备份文件名
-        :param archive_size_mb: 备份文件大小(MB)
+        :param archive_size_mb: 备份文件大小（自动单位）
         :param backup_time: 备份耗时
         :return: None
         """
@@ -931,27 +1284,15 @@ class EasyBackuperPlugin(Plugin):
         if broadcast_status:
             # 发送广播消息
             self.server.broadcast(
-                f"§2§l[EasyBackuper]§r§6备份成功！§e备份存档：{archive_name} ({archive_size_mb} MB)§a 耗时: {backup_time}",
+                "§2§l[EasyBackuper]§r§6" + self.translate('easybackuper.broadcast.success', archive_name, archive_size_mb, backup_time),
                 "easybackuper_plugin.command.players",
             )
 
-            plugin_print(f"\x1b[33m备份成功！\x1b[93m备份存档：{archive_name} ({archive_size_mb} MB) \x1b[32m耗时: {backup_time}", level="SUCCESS")
+            plugin_print(f"\x1b[33m" + self.translate('easybackuper.backup.success', archive_name, archive_size_mb, backup_time), level="SUCCESS")
 
 
             # 发送标题消息
-            try:
-                self.server.dispatch_command(
-                    self.server.command_sender, 
-                    f'/title @a title {broadcast_backup_success_title}'
-                )
-                self.server.dispatch_command(
-                    self.server.command_sender,
-                    f'/title @a subtitle {broadcast_backup_success_message}',
-                )
-            except Exception as e:
-                if Debug_MoreLogs:
-                    self.logger.error(f"发送备份成功标题消息失败: {e}")
-                    plugin_print(f"发送备份成功标题消息失败: {e}")
+            self.send_title_to_players(broadcast_backup_success_title, broadcast_backup_success_message)
 
     # NOTE: 通知功能
     def notice(self) -> bool:
@@ -991,24 +1332,12 @@ class EasyBackuperPlugin(Plugin):
         if yes_no_console == 0:
             # 是玩家
             if broadcast_status:
-                print("通知即将开始!!!")
-                self.server.dispatch_command(
-                    self.server.command_sender, f'/title @a title {broadcast_title}'
-                )
-                self.server.dispatch_command(
-                    self.server.command_sender,
-                    f'/title @a subtitle "{broadcast_message}"',
-                )
+                # print("通知即将开始!!!")
+                self.send_title_to_players(broadcast_title, broadcast_message)
         elif yes_no_console == 1:
             # 是服务端
-            print("通知即将开始!!!")
-            self.server.dispatch_command(
-                self.server.command_sender, f'/title @a title {broadcast_server_title}'
-            )
-            self.server.dispatch_command(
-                self.server.command_sender,
-                f'/title @a subtitle "{broadcast_server_message}"',
-            )
+            # print("通知即将开始!!!")
+            self.send_title_to_players(broadcast_server_title, broadcast_server_message)
         return True
 
     # NOTE: 开始运行
@@ -1085,11 +1414,14 @@ class EasyBackuperPlugin(Plugin):
 
                     # NOTE: 初始化配置文件
                     case "init":
-                        sender.send_message(f"§a[EasyBackuper] §f正在初始化配置文件...")
-                        self.logger.info("inited.")
+                        sender.send_message(f"§a[EasyBackuper] §f{self.translate('easybackuper.command.init.initializing')}")
+                        plugin_print(self.translate("easybackuper.backup.inited"), level="INFO")
 
                         # 读取默认的json配置
                         pluginConfig = json.loads(plugin_config_file)
+                        
+                        # 初始化语言文件
+                        self.load_translations(init_lang_files=True)
 
                         # 初始化配置文件
                         # 写入json配置文件
@@ -1104,55 +1436,58 @@ class EasyBackuperPlugin(Plugin):
                         with open(plugin_config_path, "r", encoding="utf-8") as load_f:
                             pluginConfig = json.load(load_f)
 
-                        self.logger.info("reloaded.")
-                        sender.send_message(f"§a[EasyBackuper] §f配置文件初始化完成！")
+                        plugin_print(self.translate("easybackuper.backup.reloaded"), level="INFO")
+                        sender.send_message(f"§a[EasyBackuper] §f{self.translate('easybackuper.command.init.success')}")
 
                     # NOTE: 重载配置文件
                     case "reload":
                         # 检查是否正在备份
                         if self.is_backing_up:
-                            sender.send_message(f"§c[EasyBackuper] §f正在备份中，请等待备份完成后再重载配置文件！")
-                            self.logger.warning("正在备份中，拒绝重载配置文件")
+                            sender.send_message(f"§c[EasyBackuper] §f{self.translate('easybackuper.backup.reload_rejected')}")
+                            plugin_print(self.translate("easybackuper.backup.reload_rejected"), level="WARNING")
                             return True
 
-                        sender.send_message(f"§a[EasyBackuper] §f正在重载配置文件...")
-                        self.logger.info("reloaded.")
+                        sender.send_message(f"§a[EasyBackuper] §f{self.translate('easybackuper.command.reload.reloading')}")
+                        plugin_print(self.translate("easybackuper.backup.reloaded"), level="INFO")
 
                         # 重载配置文件
                         # 读取json文件内容
                         with open(plugin_config_path, "r", encoding="utf-8") as load_f:
                             pluginConfig = json.load(load_f)
+                        
+                        # 重载语言文件（不重新初始化文件）
+                        self.load_translations(init_lang_files=False)
 
-                            # 更新多线程配置
-                            MAX_WORKERS = pluginConfig.get("Max_Workers", 4)
+                        # 更新多线程配置
+                        MAX_WORKERS = pluginConfig.get("Max_Workers")
 
-                            # 更新Cron相关变量
-                            scheduled_tasks = pluginConfig["Scheduled_Tasks"]
-                            scheduled_tasks_status = scheduled_tasks["Status"]
-                            scheduled_tasks_cron = scheduled_tasks["Cron"]
-                            cronExpr = scheduled_tasks_cron
+                        # 更新Cron相关变量
+                        scheduled_tasks = pluginConfig["Scheduled_Tasks"]
+                        scheduled_tasks_status = scheduled_tasks["Status"]
+                        scheduled_tasks_cron = scheduled_tasks["Cron"]
+                        cronExpr = scheduled_tasks_cron
 
-                            # 更新Auto_Clean配置
-                            auto_cleaup = pluginConfig["Auto_Clean"]
-                            use_number_detection = auto_cleaup["Use_Number_Detection"]
-                            use_number_detection_status = use_number_detection["Status"]
-                            use_number_detection_max_number = use_number_detection["Max_Number"]
-                            use_number_detection_mode = use_number_detection["Mode"]
+                        # 更新Auto_Clean配置
+                        auto_cleaup = pluginConfig["Auto_Clean"]
+                        use_number_detection = auto_cleaup["Use_Number_Detection"]
+                        use_number_detection_status = use_number_detection["Status"]
+                        use_number_detection_max_number = use_number_detection["Max_Number"]
+                        use_number_detection_mode = use_number_detection["Mode"]
 
-                            # 更新Debug配置
-                            Debug_MoreLogs = pluginConfig["Debug_MoreLogs"]
-                            Debug_MoreLogs_Player = pluginConfig["Debug_MoreLogs_Player"]
-                            Debug_MoreLogs_Cron = pluginConfig["Debug_MoreLogs_Cron"]
+                        # 更新Debug配置
+                        Debug_MoreLogs = pluginConfig["Debug_MoreLogs"]
+                        Debug_MoreLogs_Player = pluginConfig["Debug_MoreLogs_Player"]
+                        Debug_MoreLogs_Cron = pluginConfig["Debug_MoreLogs_Cron"]
 
-                        sender.send_message(f"§a[EasyBackuper] §f配置文件重载完成！")
+                        sender.send_message(f"§a[EasyBackuper] §f{self.translate('easybackuper.command.reload.success')}")
 
                         # 如果自动备份已启用，则等待下一个循环周期再备份
                         if pluginConfig["Scheduled_Tasks"]["Status"]:
-                            sender.send_message(f"§a[EasyBackuper] §f自动备份已启用，将在下一个循环周期执行备份")
+                            sender.send_message(f"§a[EasyBackuper] §f{self.translate('easybackuper.command.reload.auto_enabled')}")
 
                     # 启动自动备份
                     case "start":
-                        sender.send_message(f"§a[EasyBackuper] §f正在启动自动备份...")
+                        sender.send_message(f"§a[EasyBackuper] §f{self.translate('easybackuper.command.start.starting')}")
                         success = self.start_scheduled_backup()
                         if success:
                             # 更新配置文件中的自动备份状态为true
@@ -1160,40 +1495,42 @@ class EasyBackuperPlugin(Plugin):
                             # 保存配置文件
                             with open(plugin_config_path, "w", encoding="utf-8") as write_f:
                                 write_f.write(json.dumps(pluginConfig, indent=4, ensure_ascii=False))
-                            sender.send_message(f"§a[EasyBackuper] §f自动备份已启动！")
+                            sender.send_message(f"§a[EasyBackuper] §f{self.translate('easybackuper.command.start.success')}")
                         else:
-                            sender.send_message(f"§c[EasyBackuper] §f自动备份启动失败，请检查配置文件！")
+                            sender.send_message(f"§c[EasyBackuper] §f{self.translate('easybackuper.command.start.failed')}")
 
                     # 停止自动备份
                     case "stop":
-                        sender.send_message(f"§a[EasyBackuper] §f正在停止自动备份...")
+                        sender.send_message(f"§a[EasyBackuper] §f{self.translate('easybackuper.command.stop.stopping')}")
                         self.stop_scheduled_backup()
                         # 更新配置文件中的自动备份状态为false
                         pluginConfig["Scheduled_Tasks"]["Status"] = False
                         # 保存配置文件
                         with open(plugin_config_path, "w", encoding="utf-8") as write_f:
                             write_f.write(json.dumps(pluginConfig, indent=4, ensure_ascii=False))
-                        sender.send_message(f"§a[EasyBackuper] §f自动备份已停止！")
+                        sender.send_message(f"§a[EasyBackuper] §f{self.translate('easybackuper.command.stop.success')}")
 
                     # 查看备份状态
                     case "status":
+                        enabled_text = self.translate('easybackuper.command.status.enabled')
+                        disabled_text = self.translate('easybackuper.command.status.disabled')
                         status_messages = [
-                            f"§a[EasyBackuper] §f===== 备份状态 =====",
-                            f"§a[EasyBackuper] §f自动备份状态: {'§a已启用' if self.scheduled_backup_enabled else '§c未启用'}",
-                            f"§a[EasyBackuper] §f自动清理状态: {'§a已启用' if use_number_detection_status else '§c未启用'}",
-                            f"§a[EasyBackuper] §fDebug日志(控制台): {'§a已启用' if Debug_MoreLogs else '§c未启用'}",
-                            f"§a[EasyBackuper] §fDebug日志(玩家): {'§a已启用' if Debug_MoreLogs_Player else '§c未启用'}",
-                            f"§a[EasyBackuper] §fDebug日志(Cron): {'§a已启用' if Debug_MoreLogs_Cron else '§c未启用'}",
-                            f"§a[EasyBackuper] §f===================="
+                            f"§a[EasyBackuper] §f{self.translate('easybackuper.command.status.header')}",
+                            f"§a[EasyBackuper] §f{self.translate('easybackuper.command.status.auto_backup', f"§a{enabled_text}" if self.scheduled_backup_enabled else f"§c{disabled_text}")}",
+                            f"§a[EasyBackuper] §f{self.translate('easybackuper.command.status.auto_clean', f"§a{enabled_text}" if use_number_detection_status else f"§c{disabled_text}")}",
+                            f"§a[EasyBackuper] §f{self.translate('easybackuper.command.status.debug_console', f"§a{enabled_text}" if Debug_MoreLogs else f"§c{disabled_text}")}",
+                            f"§a[EasyBackuper] §f{self.translate('easybackuper.command.status.debug_player', f"§a{enabled_text}" if Debug_MoreLogs_Player else f"§c{disabled_text}")}",
+                            f"§a[EasyBackuper] §f{self.translate('easybackuper.command.status.debug_cron', f"§a{enabled_text}" if Debug_MoreLogs_Cron else f"§c{disabled_text}")}",
+                            f"§a[EasyBackuper] §f{self.translate('easybackuper.command.status.separator')}"
                         ]
                         for msg in status_messages:
                             sender.send_message(msg)
 
                     # 手动执行清理
                     case "clean":
-                        sender.send_message(f"§a[EasyBackuper] §f正在执行清理...")
+                        sender.send_message(f"§a[EasyBackuper] §f{self.translate('easybackuper.command.clean.cleaning')}")
                         self.auto_clean_backups()
-                        sender.send_message(f"§a[EasyBackuper] §f清理完成！")
+                        sender.send_message(f"§a[EasyBackuper] §f{self.translate('easybackuper.command.clean.success')}")
         return True
 
     # TAG: 插件加载后输出 LOGO
@@ -1209,11 +1546,10 @@ class EasyBackuperPlugin(Plugin):
     /**       **////**  /////**   **     /*    /** **////** /**   **/**/** /**  /** /**///  /**////  /**
     /********//******** ******   **      /******* //********//***** /**//**//****** /**     //******/***
     ////////  //////// //////   //       ///////   ////////  /////  //  //  /////// /*     ////// ///
-                            \x1b[33m作者："""
-            + plugin_author[0]
-            + """\x1b[0m                        \x1b[1;30;47m版本："""
+                            \x1b[33m""" + self.translate('easybackuper.logo.author') + plugin_author[0]
+            + """\x1b[0m                        \x1b[1;30;47m""" + self.translate('easybackuper.logo.version')
             + success_plugin_version
-            + """[zh_CN]\x1b[0m
+            + """[""" + pluginConfig.get("Language") + """]\x1b[0m
 ==============================================================================================================="""
         )
         plugin_print(
@@ -1221,37 +1557,37 @@ class EasyBackuperPlugin(Plugin):
             + plugin_name
             + "==============================\x1b[0m"
         )
-        plugin_print("\x1b[37;43m" + plugin_name + " 安装成功！\x1b[0m")
-        plugin_print("\x1b[37;43m版本: " + success_plugin_version + "\x1b[0m")
-        plugin_print("\x1b[1;35m查看帮助：" + plugin_the_help_link + "\x1b[0m")
-        plugin_print("\x1b[31m" + plugin_copyright + "\x1b[0m")
-        plugin_print("\x1b[33mGitHub 仓库：" + plugin_github_link + "\x1b[0m")
-        plugin_print("\x1b[36m" + plugin_description + "\x1b[0m  \x1b[33m作者：" + plugin_author[0] + "\x1b[0m")
+        plugin_print("\x1b[37;43m" + self.translate('easybackuper.plugin.installed', plugin_name) + "\x1b[0m")
+        plugin_print("\x1b[37;43m" + self.translate('easybackuper.plugin.version', success_plugin_version) + "\x1b[0m")
+        plugin_print("\x1b[1;35m" + self.translate('easybackuper.plugin.help', plugin_the_help_link) + "\x1b[0m")
+        plugin_print("\x1b[31m" + self.translate('easybackuper.plugin.copyright') + "\x1b[0m")
+        plugin_print("\x1b[33m" + self.translate('easybackuper.plugin.github', plugin_github_link) + "\x1b[0m")
+        plugin_print("\x1b[36m" + self.translate('easybackuper.plugin.description') + "\x1b[0m")
         # 显示功能状态
         if scheduled_tasks_status:
-            plugin_print(f"\x1b[32m自动备份状态：已启用 (间隔: {scheduled_tasks_cron})\x1b[0m")
+            plugin_print(f"\x1b[32m" + self.translate('easybackuper.plugin.status.auto_backup.enabled', scheduled_tasks_cron) + "\x1b[0m")
         else:
-            plugin_print("\x1b[31m自动备份状态：未启用\x1b[0m")
+            plugin_print("\x1b[31m" + self.translate('easybackuper.plugin.status.auto_backup.disabled') + "\x1b[0m")
 
         if use_number_detection_status:
-            plugin_print(f"\x1b[32m自动清理状态：已启用 (最大保留: {use_number_detection_max_number} 个)\x1b[0m")
+            plugin_print(f"\x1b[32m" + self.translate('easybackuper.plugin.status.auto_clean.enabled', str(use_number_detection_max_number)) + "\x1b[0m")
         else:
-            plugin_print("\x1b[31m自动清理状态：未启用\x1b[0m")
+            plugin_print("\x1b[31m" + self.translate('easybackuper.plugin.status.auto_clean.disabled') + "\x1b[0m")
 
         if Debug_MoreLogs:
-            plugin_print("\x1b[32mDebug更多日志状态(控制台)：已启用\x1b[0m")
+            plugin_print("\x1b[32m" + self.translate('easybackuper.plugin.status.debug_console.enabled') + "\x1b[0m")
         else:
-            plugin_print("\x1b[31mDebug更多日志状态(控制台)：未启用\x1b[0m")
+            plugin_print("\x1b[31m" + self.translate('easybackuper.plugin.status.debug_console.disabled') + "\x1b[0m")
 
         if Debug_MoreLogs_Player:
-            plugin_print("\x1b[32mDebug更多日志状态(玩家)：已启用\x1b[0m")
+            plugin_print("\x1b[32m" + self.translate('easybackuper.plugin.status.debug_player.enabled') + "\x1b[0m")
         else:
-            plugin_print("\x1b[31mDebug更多日志状态(玩家)：未启用\x1b[0m")
+            plugin_print("\x1b[31m" + self.translate('easybackuper.plugin.status.debug_player.disabled') + "\x1b[0m")
 
         if Debug_MoreLogs_Cron:
-            plugin_print("\x1b[32mDebug更多日志状态(Cron)：已启用\x1b[0m")
+            plugin_print("\x1b[32m" + self.translate('easybackuper.plugin.status.debug_cron.enabled') + "\x1b[0m")
         else:
-            plugin_print("\x1b[31mDebug更多日志状态(Cron)：未启用\x1b[0m")
+            plugin_print("\x1b[31m" + self.translate('easybackuper.plugin.status.debug_cron.disabled') + "\x1b[0m")
         plugin_print(
             "\x1b[36m=============================="
             + plugin_name
@@ -1264,11 +1600,30 @@ class EasyBackuperPlugin(Plugin):
         插件启用时调用
         :return: None
         """
-        self.logger.info(f"{plugin_name} 插件已启用！")
+        # 初始化语言文件
+        # 首先检查插件配置文件夹下的langs文件夹是否存在
+        config_lang_dir = plugin_path / "langs"
+        
+        # 如果不存在，则从源代码目录复制语言文件
+        if not config_lang_dir.exists():
+            # 创建插件配置文件夹下的langs文件夹
+            config_lang_dir.mkdir(parents=True, exist_ok=True)
+            
+            # 从源代码目录复制语言文件
+            source_lang_dir = Path(__file__).parent / "langs"
+            if source_lang_dir.exists():
+                for lang_file in source_lang_dir.glob("*.json"):
+                    shutil.copy2(lang_file, config_lang_dir / lang_file.name)
+                    plugin_print(self.translate("easybackuper.lang.copied", lang_file.name), level="INFO")
+        
+        # 加载语言文件
+        self.load_translations()
+        
+        plugin_print(self.translate("easybackuper.plugin.enabled", plugin_name), level="INFO")
 
         # 根据Mode 0或Mode 2执行自动清理
         if use_number_detection_status and use_number_detection_mode in [0, 2]:
-            self.logger.info("正在执行开服清理...")
+            plugin_print(self.translate("easybackuper.plugin.start_clean"), level="INFO")
             self.auto_clean_backups()
 
         # 启动自动备份功能（仅当配置文件中启用时）
@@ -1280,10 +1635,10 @@ class EasyBackuperPlugin(Plugin):
         插件禁用时调用
         :return: None
         """
-        self.logger.info(f"{plugin_name} 插件即将禁用...")
+        plugin_print(self.translate("easybackuper.plugin.disabling", plugin_name), level="INFO")
 
         # 停止自动备份功能
         self.stop_scheduled_backup()
 
-        self.logger.info(f"{plugin_name} 插件已禁用！")
+        plugin_print(self.translate("easybackuper.plugin.disabled", plugin_name), level="INFO")
         self.server.scheduler.cancel_tasks(self)

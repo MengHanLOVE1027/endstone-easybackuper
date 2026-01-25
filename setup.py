@@ -5,7 +5,7 @@ with open("README.md", "r", encoding="utf-8") as fh:
 
 setuptools.setup(
     name="endstone-easybackuper",
-    version="0.4.0-beta",
+    version="0.4.1",
     author="MengHanLOVE",
     url='https://github.com/MengHanLOVE1027',
     author_email="2193438288@qq.com",
