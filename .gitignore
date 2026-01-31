@@ -3,3 +3,4 @@
 dist
 build
 endstone_easybackuper.egg-info
+*.spec
