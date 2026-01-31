@@ -456,7 +456,7 @@ def main():
     max_workers = global_config.get("max_workers", 4)
     plugin_print(f"使用 {max_workers} 个线程进行文件复制", level="INFO")
 
-    copy_dir_with_progress(temp_world_dir, worlds_dir / restore_info['world_name'], max_threads=max_workers)
+    copy_dir_with_progress(temp_world_dir, worlds_dir, max_threads=max_workers)
     plugin_print("文件复制完成", level="SUCCESS")
     
     plugin_print("=" * 60, level="INFO")
