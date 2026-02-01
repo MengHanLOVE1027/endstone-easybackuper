@@ -129,8 +129,27 @@ def plugin_print(text, level="INFO") -> bool:
 plugin_config_file = """
 {
     "Language": "zh_CN",
-    "exe_7z_path": "./plugins/EasyBackuper/7za.exe",
-    "use_7z": false,
+    "Compression": {
+        "method": "zip",
+        "exe_7z_path": "./plugins/EasyBackuper/7za.exe",
+        "formats": {
+            "7z": {
+                "extension": ".7z",
+                "compress_args": ["a", "-t7z", "-mx=5"],
+                "extract_args": ["x", "-y"]
+            },
+            "zip": {
+                "extension": ".zip",
+                "compress_args": ["a", "-tzip", "-mx=5"],
+                "extract_args": ["x", "-y"]
+            },
+            "tar": {
+                "extension": ".tar.gz",
+                "compress_args": ["a", "-ttar", "-mx=5"],
+                "extract_args": ["x", "-y"]
+            }
+        }
+    },
     "BackupFolderPath": "./backup",
     "Max_Workers": 4,
     "Auto_Clean": {
@@ -648,9 +667,16 @@ class EasyBackuperPlugin(Plugin):
             def reset_backup_status():
                 self.is_backing_up = False
 
-            # 7z相关功能
-            use_7z = pluginConfig["use_7z"]
-            exe_7z_path = Path(pluginConfig["exe_7z_path"])
+            # 压缩相关功能
+            compression_config = pluginConfig.get("Compression", {})
+            compression_method = compression_config.get("method", "zip")
+            exe_7z_path = Path(compression_config.get("exe_7z_path", "./plugins/EasyBackuper/7za.exe"))
+            formats = compression_config.get("formats", {})
+
+            # 获取当前压缩格式的配置
+            format_config = formats.get(compression_method, {})
+            file_extension = format_config.get("extension", ".zip")
+            compress_args = format_config.get("compress_args", ["a", "-tzip", "-mx=5"])
 
             # 暂停存档写入
             assert server.dispatch_command(server.command_sender, "save hold")
@@ -862,14 +888,15 @@ class EasyBackuperPlugin(Plugin):
                         f"{time_obj.hour:02d}-" +
                         f"{time_obj.minute:02d}-" +
                         f"{time_obj.second:02d}" +
-                        f"[{world_level_name}]"
+                        f"[{world_level_name}]" +
+                        file_extension
                 )
                 zip_file_new = (
-                        pluginConfig["BackupFolderPath"] + "/" + archive_name + ".zip"
+                        pluginConfig["BackupFolderPath"] + "/" + archive_name
                 )
 
-                # 是否使用7z来备份
-                if use_7z:
+                # 根据压缩方法选择压缩方式
+                if compression_method in ["7z", "zip"]:
                     if os.path.exists(month_rank_dir):
                         plugin_print(self.translate("easybackuper.backup.compressing_7z"), level="INFO")
 
@@ -884,6 +911,40 @@ class EasyBackuperPlugin(Plugin):
                             plugin_print(self.translate("easybackuper.backup.compress_success"), level="SUCCESS")
                         else:
                             plugin_print(self.translate("easybackuper.backup.compress_failed"), level="ERROR")
+                            self.broadcast_backup_wrong()
+
+                        # 清除tmp文件夹
+                        if not os.path.exists(backup_tmp_path):
+                            os.mkdir(backup_tmp_path)
+                        else:
+                            shutil.rmtree(backup_tmp_path)
+                    else:
+                        plugin_print(self.translate("easybackuper.backup.dir_not_exist"), level="ERROR")
+                        self.broadcast_backup_wrong()
+                elif compression_method == "tar":
+                    # 使用tar压缩
+                    import tarfile
+                    if os.path.exists(month_rank_dir):
+                        plugin_print(self.translate("easybackuper.backup.compressing"), level="INFO")
+
+                        if not os.path.exists(pluginConfig["BackupFolderPath"]):
+                            os.mkdir(pluginConfig["BackupFolderPath"])
+
+                        try:
+                            # 使用tar.gz格式压缩
+                            with tarfile.open(zip_file_new, "w:gz") as tar:
+                                # 遍历目录并添加文件到tar
+                                for dir_path, dir_names, file_names in os.walk(month_rank_dir):
+                                    for filename in file_names:
+                                        file_path = os.path.join(dir_path, filename)
+                                        # 计算归档中的相对路径
+                                        arc_path = os.path.relpath(file_path, month_rank_dir)
+                                        tar.add(file_path, arcname=arc_path)
+
+                            plugin_print(self.translate('easybackuper.compress.success'), level="SUCCESS")
+                        except Exception as e:
+                            plugin_print(self.translate('easybackuper.compress.exception', str(e)), level="ERROR")
+                            plugin_print(self.translate('easybackuper.compress.failed'), level="ERROR")
                             self.broadcast_backup_wrong()
 
                         # 清除tmp文件夹
@@ -1152,10 +1213,13 @@ class EasyBackuperPlugin(Plugin):
                     plugin_print(self.translate("easybackuper.backup.folder_not_exist", backup_folder), level="WARNING")
                 return
 
-            # 获取所有备份文件
+            # 获取所有备份文件（支持多种压缩格式）
             backup_files = []
-            for file in backup_folder.glob("*.zip"):
-                backup_files.append((file.stat().st_mtime, file))
+            # 支持的压缩格式扩展名
+            supported_extensions = [".zip", ".7z", ".tar.gz", ".tgz"]
+            for ext in supported_extensions:
+                for file in backup_folder.glob(f"*{ext}"):
+                    backup_files.append((file.stat().st_mtime, file))
 
             # 按文件名中的日期时间部分进行排序
             backup_files.sort(key=lambda x: x[0])
@@ -1379,10 +1443,13 @@ class EasyBackuperPlugin(Plugin):
                 sender.send_message(f"§c[EasyBackuper] §f{self.translate('easybackuper.backup.folder_not_exist', backup_folder)}")
                 return
 
-            # 获取所有备份文件
+            # 获取所有备份文件（支持多种压缩格式）
             backup_files = []
-            for file in backup_folder.glob("*.zip"):
-                backup_files.append((file.stat().st_mtime, file))
+            # 支持的压缩格式扩展名
+            supported_extensions = [".zip", ".7z", ".tar.gz", ".tgz"]
+            for ext in supported_extensions:
+                for file in backup_folder.glob(f"*{ext}"):
+                    backup_files.append((file.stat().st_mtime, file))
 
             # 按修改时间倒序排序（最新的在前）
             backup_files.sort(key=lambda x: x[0], reverse=True)
@@ -1438,11 +1505,14 @@ class EasyBackuperPlugin(Plugin):
                 sender.send_message(f"§c[EasyBackuper] §f{self.translate('easybackuper.backup.folder_not_exist', backup_folder)}")
                 return
 
-            # 获取所有备份文件
+            # 获取所有备份文件（支持多种压缩格式）
             plugin_print(f"正在扫描备份文件夹: {backup_folder}", level="INFO")
             backup_files = []
-            for file in backup_folder.glob("*.zip"):
-                backup_files.append((file.stat().st_mtime, file))
+            # 支持的压缩格式扩展名
+            supported_extensions = [".zip", ".7z", ".tar.gz", ".tgz"]
+            for ext in supported_extensions:
+                for file in backup_folder.glob(f"*{ext}"):
+                    backup_files.append((file.stat().st_mtime, file))
 
             plugin_print(f"找到 {len(backup_files)} 个备份文件", level="INFO")
 
@@ -1813,10 +1883,16 @@ class EasyBackuperPlugin(Plugin):
             # 获取备份文件路径
             backup_folder = Path(pluginConfig["BackupFolderPath"])
             backup_files = []
-            for file in backup_folder.glob("*.zip"):
-                backup_files.append((file.stat().st_mtime, file))
+            # 支持多种压缩格式：.zip, .7z, .tar.gz, .tgz
+            for pattern in ["*.zip", "*.7z", "*.tar.gz", "*.tgz"]:
+                for file in backup_folder.glob(pattern):
+                    backup_files.append((file.stat().st_mtime, file))
             backup_files.sort(key=lambda x: x[0], reverse=True)
             
+            # 打印调试信息
+            plugin_print(f"备份文件总数: {len(backup_files)}", level="DEBUG")
+            plugin_print(f"待执行的回档索引: {self.pending_restore_index}", level="DEBUG")
+
             if self.pending_restore_index > 0 and self.pending_restore_index <= len(backup_files):
                 selected_backup = backup_files[self.pending_restore_index - 1][1]
                 if not selected_backup.is_absolute():
@@ -1840,7 +1916,7 @@ class EasyBackuperPlugin(Plugin):
                     else:
                         plugin_print(f"准备启动外部回档程序: {exe_full_path}", level="INFO")
                         
-                        cmd_str = f"{exe_full_path} \"{selected_backup}\" \"{Path.cwd()}\" \"{world_level_name}\""
+                        cmd_str = f"{exe_full_path} -backup \"{selected_backup}\" -server \"{Path.cwd()}\" -world \"{world_level_name}\""
 
                         plugin_print(f"传递给外部程序的参数: {cmd_str}", level="DEBUG")
                         # 使用subprocess.Popen启动外部程序，不等待其完成
@@ -1865,7 +1941,12 @@ class EasyBackuperPlugin(Plugin):
                     plugin_print(f"启动外部回档程序失败: {str(e)}", level="ERROR")
                     plugin_print(f"错误详情: {type(e).__name__}", level="ERROR")
             else:
-                plugin_print(f"无效的备份索引: {self.pending_restore_index}", level="ERROR")
+                plugin_print(f"无效的备份索引: {self.pending_restore_index}，可用范围: 1-{len(backup_files)}", level="ERROR")
+                # 打印所有备份文件列表，方便调试
+                if len(backup_files) > 0:
+                    plugin_print("可用的备份文件列表:", level="DEBUG")
+                    for idx, (mtime, file) in enumerate(backup_files, 1):
+                        plugin_print(f"  [{idx}] {file.name} (时间: {datetime.fromtimestamp(mtime).strftime('%Y-%m-%d %H:%M:%S')})", level="DEBUG")
 
         plugin_print(self.translate("easybackuper.plugin.disabled", plugin_name), level="INFO")
         self.server.scheduler.cancel_tasks(self)
