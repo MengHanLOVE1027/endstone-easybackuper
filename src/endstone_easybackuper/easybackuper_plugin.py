@@ -904,9 +904,9 @@ class EasyBackuperPlugin(Plugin):
                             os.mkdir(pluginConfig["BackupFolderPath"])
 
                         # 压缩后的名字
-                        path = str(exe_7z_path) + " a -tzip " + '"' + zip_file_new + '" ' + '"./' + month_rank_dir + '/*"'
-                        plugin_print(self.translate("easybackuper.backup.7z_command", path), level="DEBUG")
-                        result = os.system(path)
+                        cmd = [str(exe_7z_path), "a", "-tzip", zip_file_new, f"{month_rank_dir}/*"]
+                        plugin_print(self.translate("easybackuper.backup.7z_command", " ".join(cmd)), level="DEBUG")
+                        result = subprocess.run(cmd, capture_output=True)
                         if result == 0:
                             plugin_print(self.translate("easybackuper.backup.compress_success"), level="SUCCESS")
                         else:
@@ -1916,26 +1916,32 @@ class EasyBackuperPlugin(Plugin):
                     else:
                         plugin_print(f"准备启动外部回档程序: {exe_full_path}", level="INFO")
                         
-                        cmd_str = f"{exe_full_path} -backup \"{selected_backup}\" -server \"{Path.cwd()}\" -world \"{world_level_name}\""
+                        # 构建命令和参数列表
+                        cmd_args = [
+                            str(exe_full_path),
+                            "-backup", str(selected_backup),
+                            "-server", str(Path.cwd()),
+                            "-world", str(world_level_name)
+                        ]
 
-                        plugin_print(f"传递给外部程序的参数: {cmd_str}", level="DEBUG")
+                        plugin_print(f"传递给外部程序的参数: {' '.join(cmd_args)}", level="DEBUG")
                         # 使用subprocess.Popen启动外部程序，不等待其完成
                         if os.name == 'nt':  # Windows
                             process = subprocess.Popen(
-                                cmd_str,
-                                creationflags=subprocess.CREATE_NEW_CONSOLE,
+                                cmd_args,
+                                universal_newlines=True,
                                 close_fds=True  # 改为 True，确保文件描述符正确处理
                             )
                             plugin_print(f"外部程序进程ID: {process.pid}", level="INFO")
                         else:  # Linux/Mac
+                            # 使用subprocess.Popen启动进程，并将输出显示在同一个终端中
                             process = subprocess.Popen(
-                                cmd_str,
-                                start_new_session=True,
-                                stdout=subprocess.DEVNULL,
-                                stderr=subprocess.DEVNULL
+                                cmd_args,
+                                stdout=None,
+                                stderr=None,
+                                universal_newlines=True
                             )
                             plugin_print(f"外部程序进程ID: {process.pid}", level="INFO")
-                        
                         plugin_print(f"外部回档程序已启动，将在服务器关闭后执行回档操作", level="INFO")
                 except Exception as e:
                     plugin_print(f"启动外部回档程序失败: {str(e)}", level="ERROR")

@@ -11,10 +11,19 @@ authors = [
 description = "基于 EndStone 的最最最简单的Python热备份插件 / The simplest Python hot backup plugin based on EndStone."
 readme = "README.md"
 license = { file = "LICENSE" }
+requires-python = ">=3.8"
 keywords = ["endstone", "plugins", "backup"]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: GNU Affero General Public License v3 or later (AGPLv3+)",
+    "Operating System :: OS Independent",
+]
 
 [project.urls]
 Homepage = "https://github.com/MengHanLOVE1027/endstone-easybackuper"
 
 [project.entry-points."endstone"]
 easybackuper = "endstone_easybackuper:EasyBackuperPlugin"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/endstone_easybackuper"]
