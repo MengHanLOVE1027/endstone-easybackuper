@@ -7,6 +7,7 @@
 
 <p>
   <b>一个基于 EndStone 的轻量级、高性能、功能全面的Minecraft服务器热备份插件。 </b>
+
 Powered by EndStone.<br>
 </p>
 </div>
