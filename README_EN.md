@@ -7,6 +7,7 @@
 
 <p>
   <b>A lightweight, high-performance, and feature-rich hot backup plugin for Minecraft servers based on EndStone. </b>
+
   Powered by EndStone.<br>
 </p>
 </div>
