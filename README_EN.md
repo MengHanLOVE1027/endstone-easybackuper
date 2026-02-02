@@ -339,6 +339,6 @@ Issues and Pull Requests are welcome!
 
 **⭐ If this project is helpful to you, please give us a Star!**
 
-[![Star History Chart](https://api.star-history.com/svg?repos=MengHanLOVE1027/EasyBackuper&type=Date)](https://star-history.com/#MengHanLOVE1027/EasyBackuper&Date)
+[![Star History Chart](https://api.star-history.com/svg?repos=MengHanLOVE1027/endstone-easybackuper&type=Date)](https://star-history.com/#MengHanLOVE1027/endstone-easybackuper&Date)
 
 </div>

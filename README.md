@@ -329,6 +329,6 @@ EasyBackuper 是一个专为 Endstone 服务器设计的备份插件，旨在简
 
 **⭐ 如果这个项目对你有帮助，请给我们一个 Star！**
 
-[![Star History Chart](https://api.star-history.com/svg?repos=MengHanLOVE1027/EasyBackuper&type=Date)](https://star-history.com/#MengHanLOVE1027/EasyBackuper&Date)
+[![Star History Chart](https://api.star-history.com/svg?repos=MengHanLOVE1027/endstone-easybackuper&type=Date)](https://star-history.com/#MengHanLOVE1027/endstone-easybackuper&Date)
 
 </div>
