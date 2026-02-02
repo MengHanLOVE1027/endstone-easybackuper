@@ -13,6 +13,7 @@
 <div align="center">
 
 [![README](https://img.shields.io/badge/README-中文|Chinese-blue)](README.md) [![README_EN](https://img.shields.io/badge/README-英文|English-blue)](README_EN.md)
+
 [![Github Version](https://img.shields.io/github/v/release/MengHanLOVE1027/endstone-easybackuper)](https://github.com/MengHanLOVE1027/endstone-easybackuper/releases) [![GitHub License](https://img.shields.io/badge/License-AGPL%203.0-blue.svg)](https://opensource.org/licenses/AGPL-3.0) [![Python](https://img.shields.io/badge/Python-3.8+-green.svg)](https://www.python.org/) [![Platform](https://img.shields.io/badge/Platform-EndStone-9cf.svg)](https://endstone.io) [![Downloads](https://img.shields.io/github/downloads/MengHanLOVE1027/EasyBackuper/total.svg)](https://github.com/MengHanLOVE1027/EasyBackuper/releases)
 
 </div>
