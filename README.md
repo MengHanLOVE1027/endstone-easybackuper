@@ -77,10 +77,6 @@ EasyBackuper 是一个专为 Endstone 服务器设计的备份插件，旨在简
    ```bash
    # 将插件主文件复制到服务器 plugins 目录
    cp endstone_easybackuper-x.x.x-py3-none-any plugins/
-   
-   # 创建插件资源目录
-   mkdir -p plugins/EasyBackuper/config
-   mkdir -p plugins/EasyBackuper/langs
    ```
 
 3. **安装依赖文件**
@@ -106,7 +102,24 @@ EasyBackuper 是一个专为 Endstone 服务器设计的备份插件，旨在简
   // 🗜️ 压缩配置
   "Compression": {
     "method": "zip",  // 压缩算法: 7z, zip, tar
-    "exe_7z_path": "./plugins/EasyBackuper/7za.exe"  // 7z可执行文件路径
+    "exe_7z_path": "./plugins/EasyBackuper/7za.exe",  // 7z可执行文件路径
+    "formats": {
+      "7z": {
+        "extension": ".7z",
+        "compress_args": ["a", "-t7z", "-mx=5"],
+        "extract_args": ["x", "-y"]
+      },
+      "zip": {
+        "extension": ".zip",
+        "compress_args": ["a", "-tzip", "-mx=5"],
+        "extract_args": ["x", "-y"]
+      },
+      "tar": {
+        "extension": ".tar.gz",
+        "compress_args": ["a", "-ttar", "-mx=5"],
+        "extract_args": ["x", "-y"]
+      }
+    }
   },
   
   // 📁 存储路径
@@ -118,32 +131,48 @@ EasyBackuper 是一个专为 Endstone 服务器设计的备份插件，旨在简
   // 🧹 自动清理
   "Auto_Clean": {
     "Use_Number_Detection": {
-      "Status": true,    // 启用自动清理
+      "Status": false,    // 启用自动清理
       "Max_Number": 5,   // 最大保留备份数量
-      "Mode": 1          // 0=开服后清理, 1=备份后清理, 2=开服时清理
+      "Mode": 0          // 0=开服后清理, 1=备份后清理, 2=开服时清理
     }
   },
   
   // ⏰ 定时任务
   "Scheduled_Tasks": {
-    "Status": true,                // 启用定时备份
+    "Status": false,                // 启用定时备份
     "Cron": "*/30 * * * * *"      // Cron表达式，每30秒
   },
   
   // 📢 通知设置
   "Broadcast": {
     "Status": true,                // 启用广播通知
-    "Time_ms": 5000               // 备份前通知时间（毫秒）
+    "Time_ms": 5000,              // 备份前通知时间（毫秒）
+    "Title": "[OP]要开始备份啦~",
+    "Message": "将于 5秒 后进行备份！",
+    "Server_Title": "[Server]Never Gonna Give You UP~",
+    "Server_Message": "Never Gonna Let You Down~",
+    "Backup_success_Title": "备份完成！",
+    "Backup_success_Message": "星级服务，让爱连接",
+    "Backup_wrong_Title": "很好的邢级服务，使我备份失败",
+    "Backup_wrong_Message": "RT"
   },
   
+  // 🔍 调试设置
+  "Debug_MoreLogs": false,         // 启用详细日志（控制台）
+  "Debug_MoreLogs_Player": false,  // 启用详细日志（玩家）
+  "Debug_MoreLogs_Cron": false,   // 启用详细日志（Cron任务）
+
   // 🔄 恢复配置
   "Restore": {
+    "exe_path": "./plugins/EasyBackuper/restore_handler.exe",  // 恢复处理器路径
     "config": {
       "backup_old_world_before_restore": true,  // 恢复前备份当前世界
       "restart_server": {
-        "status": true,                         // 恢复后自动重启
-        "wait_time_s": 10                       // 重启等待时间（秒）
-      }
+        "status": false,                        // 恢复后自动重启
+        "wait_time_s": 3,                       // 重启等待时间（秒）
+        "start_script_path": "./start.bat"          // 启动脚本路径
+      },
+      "debug": false  // 启用恢复调试日志
     }
   }
 }
@@ -178,7 +207,7 @@ EasyBackuper 是一个专为 Endstone 服务器设计的备份插件，旨在简
 
 | 命令              | 权限 | 描述             |
 | ----------------- | ---- | ---------------- |
-| `/restore list`   | OP   | 显示所有可用备份 |
+| `/restore list <数量>`   | OP   | 显示所有可用备份 (可指定数量) |
 | `/restore <索引>` | OP   | 恢复指定备份     |
 | `/restore`        | OP   | 显示恢复帮助     |
 

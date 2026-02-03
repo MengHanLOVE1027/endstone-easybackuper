@@ -106,7 +106,24 @@ Configuration file location: `plugins/EasyBackuper/config/EasyBackuper.json`
   // 🗜️ Compression Configuration
   "Compression": {
     "method": "zip",  // Compression algorithm: 7z, zip, tar
-    "exe_7z_path": "./plugins/EasyBackuper/7za.exe"  // Path to 7z executable
+    "exe_7z_path": "./plugins/EasyBackuper/7za.exe",  // Path to 7z executable
+    "formats": {
+      "7z": {
+        "extension": ".7z",
+        "compress_args": ["a", "-t7z", "-mx=5"],
+        "extract_args": ["x", "-y"]
+      },
+      "zip": {
+        "extension": ".zip",
+        "compress_args": ["a", "-tzip", "-mx=5"],
+        "extract_args": ["x", "-y"]
+      },
+      "tar": {
+        "extension": ".tar.gz",
+        "compress_args": ["a", "-ttar", "-mx=5"],
+        "extract_args": ["x", "-y"]
+      }
+    }
   },
   
   // 📁 Storage Path
@@ -118,32 +135,48 @@ Configuration file location: `plugins/EasyBackuper/config/EasyBackuper.json`
   // 🧹 Automatic Cleanup
   "Auto_Clean": {
     "Use_Number_Detection": {
-      "Status": true,    // Enable automatic cleanup
+      "Status": false,    // Enable automatic cleanup
       "Max_Number": 5,   // Maximum number of backups to retain
-      "Mode": 1          // 0=Clean after server start, 1=Clean after backup, 2=Clean at server start
+      "Mode": 0          // 0=Clean after server start, 1=Clean after backup, 2=Clean at server start
     }
   },
   
   // ⏰ Scheduled Tasks
   "Scheduled_Tasks": {
-    "Status": true,                // Enable scheduled backups
+    "Status": false,                // Enable scheduled backups
     "Cron": "*/30 * * * * *"      // Cron expression, every 30 seconds
   },
   
   // 📢 Notification Settings
   "Broadcast": {
     "Status": true,                // Enable broadcast notifications
-    "Time_ms": 5000               // Notification time before backup (milliseconds)
+    "Time_ms": 5000,              // Notification time before backup (milliseconds)
+    "Title": "[OP]Starting backup~",
+    "Message": "Backup will start in 5 seconds!",
+    "Server_Title": "[Server]Never Gonna Give You UP~",
+    "Server_Message": "Never Gonna Let You Down~",
+    "Backup_success_Title": "Backup completed!",
+    "Backup_success_Message": "Star service, connecting with love",
+    "Backup_wrong_Title": "Excellent service, backup failed",
+    "Backup_wrong_Message": "RT"
   },
   
+  // 🔍 Debug Settings
+  "Debug_MoreLogs": false,         // Enable verbose logs (console)
+  "Debug_MoreLogs_Player": false,  // Enable verbose logs (player)
+  "Debug_MoreLogs_Cron": false,   // Enable verbose logs (cron tasks)
+
   // 🔄 Restoration Configuration
   "Restore": {
+    "exe_path": "./plugins/EasyBackuper/restore_handler.exe",  // Restoration handler path
     "config": {
       "backup_old_world_before_restore": true,  // Backup current world before restoration
       "restart_server": {
-        "status": true,                         // Auto-restart server after restoration
-        "wait_time_s": 10                       // Restart wait time (seconds)
-      }
+        "status": false,                        // Auto-restart server after restoration
+        "wait_time_s": 3,                       // Restart wait time (seconds)
+        "start_script_path": "./start.bat"          // Start script path
+      },
+      "debug": false  // Enable restoration debug logs
     }
   }
 }
