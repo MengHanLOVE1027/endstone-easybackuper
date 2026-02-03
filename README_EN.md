@@ -364,7 +364,7 @@ Issues and Pull Requests are welcome!
 ## 🌟 Support & Feedback
 
 - **GitHub Issues**: [Submit Issues](https://github.com/MengHanLOVE1027/EasyBackuper/issues)
-- **MineBBS**: [Discussion Thread](https://www.minebbs.com/resources/easybackuper-eb.7771/)
+- **MineBBS**: [Discussion Thread](https://www.minebbs.com/resources/easybackuper-eb.14896/)
 - **Author**: 梦涵LOVE
 
 ---
