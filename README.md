@@ -51,7 +51,7 @@ EasyBackuper 是一个专为 Endstone 服务器设计的备份插件，旨在简
 │       ├── easybackuper_YYYYMMDD.log    # 主日志文件
 │       └── easybackuper_restore_YYYYMMDD.log  # 恢复日志
 ├── plugins/
-│   ├── endstone_easybackuper-x.x.x-py3-none-any                  # 插件主文件
+│   ├── endstone_easybackuper-x.x.x-py3-none-any.whl  # 插件主文件
 │   └── EasyBackuper/                    # 插件资源目录
 │       ├── 7za.exe                      # 7z压缩工具
 │       ├── restore_handler.exe          # 备份恢复处理器
