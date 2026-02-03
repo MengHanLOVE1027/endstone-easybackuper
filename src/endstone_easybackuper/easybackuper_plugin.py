@@ -16,11 +16,11 @@ from endstone.plugin import Plugin
 plugin_name = "EasyBackuper"
 plugin_name_smallest = "easybackuper"
 plugin_description = "基于 EndStone 的最最最简单的Python热备份插件 / The simplest Python hot backup plugin based on EndStone."
-plugin_version = "0.4.3.1"
+plugin_version = "0.4.3.2"
 plugin_author = ["梦涵LOVE"]
-plugin_the_help_link = "https://www.minebbs.com/resources/easybackuper-eb.7771/"
-plugin_website = "https://minebbs.com"
-plugin_github_link = "https://github.com/MengHanLOVE1027/EasyBackuper"
+plugin_the_help_link = "https://www.minebbs.com/resources/easybackuper-eb-minecraft.14896/"
+plugin_website = "https://www.minebbs.com/resources/easybackuper-eb-minecraft.14896/"
+plugin_github_link = "https://github.com/MengHanLOVE1027/endstone-easybackuper"
 plugin_license = "AGPL-3.0"
 plugin_copyright = "务必保留原作者信息！"
 

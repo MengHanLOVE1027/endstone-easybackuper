@@ -349,8 +349,8 @@ EasyBackuper 是一个专为 Endstone 服务器设计的备份插件，旨在简
 
 ## 🌟 支持与反馈
 
-- **GitHub Issues**: [提交问题](https://github.com/MengHanLOVE1027/EasyBackuper/issues)
-- **MineBBS**: [讨论帖](https://www.minebbs.com/resources/easybackuper-eb.14896/)
+- **GitHub Issues**: [提交问题](https://github.com/MengHanLOVE1027/endstone-easybackuper/issues)
+- **MineBBS**: [讨论帖](https://www.minebbs.com/resources/easybackuper-eb-minecraft.14896/)
 - **作者**: 梦涵LOVE
 
 ---
