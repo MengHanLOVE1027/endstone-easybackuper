@@ -1,4 +1,3 @@
-
 package main
 
 import (
@@ -321,7 +320,7 @@ func loadConfig(serverDir string) error {
 
 // copyFileWithProgress copy file
 func copyFileWithProgress(src, dst string) error {
-	pluginPrint(fmt.Sprintf("Copying file:%s --> %s", fmt.Sprint(src), fmt.Sprint(dst)), "DEBUG")
+	pluginPrint(fmt.Sprintf("Copying file:%s --> %s", src, dst), "DEBUG")
 
 	sourceFile, err := os.Open(src)
 	if err != nil {

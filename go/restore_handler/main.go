@@ -320,7 +320,7 @@ func loadConfig(serverDir string) error {
 
 // copyFileWithProgress 复制文件
 func copyFileWithProgress(src, dst string) error {
-	pluginPrint(fmt.Sprintf("复制文件: %s --> %s", fmt.Sprint(src), fmt.Sprint(dst)), "DEBUG")
+	pluginPrint(fmt.Sprintf("复制文件: %s --> %s", src, dst), "DEBUG")
 
 	sourceFile, err := os.Open(src)
 	if err != nil {
@@ -360,7 +360,7 @@ func copyDirWithProgress(src, dst string, maxThreads int) error {
 		if err := os.MkdirAll(dst, 0755); err != nil {
 			return fmt.Errorf("创建目标目录失败: %v", err)
 		}
-		pluginPrint(fmt.Sprintf("创建目录: %s", fmt.Sprint(dst)), "DEBUG")
+		pluginPrint(fmt.Sprintf("创建目录: %s", dst), "DEBUG")
 	}
 
 	// 收集所有文件
@@ -395,7 +395,7 @@ func copyDirWithProgress(src, dst string, maxThreads int) error {
 			if err := os.MkdirAll(dstDir, 0755); err != nil {
 				return fmt.Errorf("创建目录失败: %v", err)
 			}
-			pluginPrint(fmt.Sprintf("创建目录: %s ==> %s", fmt.Sprint(dir), fmt.Sprint(dstDir)), "DEBUG")
+			pluginPrint(fmt.Sprintf("创建目录: %s ==> %s", dir, dstDir), "DEBUG")
 		}
 	}
 
