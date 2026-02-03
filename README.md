@@ -1,9 +1,10 @@
 <div align="center">
-  <a href="https://github.com/MengHanLOVE1027/endstone-easybackuper/releases">
-    <img src="https://avatars.githubusercontent.com/u/99132833?v=4" alt="Logo" width="128" height="128">
-  </a>
 
-<h3>Endstone-EasyBackuper</h3>
+![EndStone-EasyBackuper](https://socialify.git.ci/MengHanLOVE1027/endstone-easybackuper/image?custom_language=GO&description=1&font=Inter&forks=1&issues=1&language=1&logo=https://avatars.githubusercontent.com/u/99132833?v=4&name=1&owner=1&pattern=Plus&pulls=1&stargazers=1&theme=Auto)
+  <!-- <a href="https://github.com/MengHanLOVE1027/endstone-easybackuper/releases">
+    <img src="https://avatars.githubusercontent.com/u/99132833?v=4" alt="Logo" width="128" height="128">
+  </a> -->
+<h3>EndStone-EasyBackuper</h3>
 
 <p>
   <b>一个基于 EndStone 的轻量级、高性能、功能全面的Minecraft服务器热备份插件。 </b>
