@@ -9,7 +9,7 @@ setuptools.setup(
     author="MengHanLOVE",
     url='https://github.com/MengHanLOVE1027',
     author_email="2193438288@qq.com",
-    description="基于 EndStone 的最最最简单的Python热备份插件 / The simplest Python hot backup plugin based on EndStone.",
+    description="一个基于 EndStone 的轻量级、高性能、功能全面的Minecraft服务器热备份插件 / A lightweight, high-performance, and feature-rich hot backup plugin for Minecraft servers based on EndStone.",
     long_description=long_description,
     long_description_content_type="text/markdown",
     package_dir={"": "src"},
