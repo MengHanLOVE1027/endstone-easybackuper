@@ -72,7 +72,7 @@ Server Root Directory/
 
 1. **Download the Plugin**
    - Download the latest version from the [Releases page](https://github.com/MengHanLOVE1027/EasyBackuper/releases)
-   - Or get it from [MineBBS](https://www.minebbs.com/resources/easybackuper-eb.7771/)
+   - Or get it from [MineBBS](https://www.minebbs.com/resources/easybackuper-eb-minecraft.14896/)
 
 2. **Install the Plugin**
    ```bash
@@ -85,7 +85,7 @@ Server Root Directory/
    ```
 
 3. **Install Dependencies**
-   - Place `7za.exe` and `restore_handler.exe` into the `plugins/EasyBackuper/` directory (restore_handler.exe can be downloaded from the [Releases page](https://github.com/MengHanLOVE1027/EasyBackuper/releases) or compiled manually)
+   - Place `7za.exe` and `restore_handler.exe` into the `plugins/EasyBackuper/` directory (restore_handler.exe can be downloaded from the [Releases page](https://github.com/MengHanLOVE1027/endstone-easybackuper/releases) or compiled manually)
 
 4. **Start the Server**
    - Restart the server or use the `/reload` command
