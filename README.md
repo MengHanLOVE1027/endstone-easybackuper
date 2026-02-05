@@ -77,7 +77,7 @@ EasyBackuper 是一个专为 Endstone 服务器设计的备份插件，旨在简
 2. **安装插件**
    ```bash
    # 将插件主文件复制到服务器 plugins 目录
-   cp endstone_easybackuper-x.x.x-py3-none-any plugins/
+   cp endstone_easybackuper-x.x.x-py3-none-any.whl plugins/
    ```
 
 3. **安装依赖文件**
