@@ -72,7 +72,7 @@ EasyBackuper 是一个专为 Endstone 服务器设计的备份插件，旨在简
 
 1. **下载插件**
    - 从 [Release页面](https://github.com/MengHanLOVE1027/EasyBackuper/releases) 下载最新版本
-   - 或从 [MineBBS](https://www.minebbs.com/resources/easybackuper-eb.7771/) 获取
+   - 或从 [MineBBS](https://www.minebbs.com/resources/easybackuper-eb-minecraft.14896/) 获取
 
 2. **安装插件**
    ```bash
