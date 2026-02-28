@@ -1,5 +1,5 @@
 # python 库
-import re, os, json, shutil, zipfile, time
+import re, os, json, shutil, zipfile, time, random
 from datetime import datetime
 from pathlib import Path
 from concurrent.futures import ThreadPoolExecutor, as_completed
@@ -12,27 +12,30 @@ from endstone import Player
 from endstone.command import Command, CommandSender, CommandSenderWrapper
 from endstone.plugin import Plugin
 
+# Easy系列插件的 BStats 遥测模块
+from .bstats import BStats, SimplePie
+
 # TAG: 全局常量
 plugin_name = "EasyBackuper"
 plugin_name_smallest = "easybackuper"
-plugin_description = "基于 EndStone 的最最最简单的Python热备份插件 / The simplest Python hot backup plugin based on EndStone."
-plugin_version = "0.4.3.3"
+plugin_description = "一个基于 EndStone 的轻量级、高性能、功能全面的Minecraft服务器热备份插件 / A lightweight, high-performance, and feature-rich hot backup plugin for Minecraft servers based on EndStone."
+plugin_version = "0.4.3.4"
 plugin_author = ["梦涵LOVE"]
-plugin_the_help_link = "https://www.minebbs.com/resources/easybackuper-eb-minecraft.14896/"
 plugin_website = "https://www.minebbs.com/resources/easybackuper-eb-minecraft.14896/"
 plugin_github_link = "https://github.com/MengHanLOVE1027/endstone-easybackuper"
+plugin_minebbs_link = "https://www.minebbs.com/resources/easybackuper-eb-minecraft.14896/"
 plugin_license = "AGPL-3.0"
 plugin_copyright = "务必保留原作者信息！"
 
-success_plugin_version = "v" + plugin_version
-plugin_full_name = plugin_name + " " + success_plugin_version
+current_plugin_version = "v" + plugin_version
+plugin_full_name = plugin_name + " " + current_plugin_version
 
 # 读取文件内容
 with open("./server.properties", "r") as file:
     server_properties_file = file.read()
 
 plugin_path = Path(f"./plugins/{plugin_name}")
-plugin_config_path = plugin_path / "config" / "EasyBackuper.json"
+plugin_config_path = plugin_path / "config" / f"{plugin_name}.json"
 backup_tmp_path = Path("./backup_tmp")  # 临时复制解压缩路径
 world_level_name = re.search(r"level-name=(.*)", server_properties_file).group(
     1
@@ -40,9 +43,69 @@ world_level_name = re.search(r"level-name=(.*)", server_properties_file).group(
 world_folder_path = Path(f"./worlds/{world_level_name}")  # 存档路径
 
 
+# --- 随机颜色系统 ---
+GLOBAL_C1 = None
+GLOBAL_C2 = None
+
+def randomVividColor():
+    """生成一个鲜艳的随机颜色"""
+    rand = random.random() * 260
+    if rand < 90:
+        h = rand
+    elif rand < 200:
+        h = rand + 60
+    else:
+        h = rand + 100
+    s = 0.90 + random.random() * 0.10
+    l = 0.65 + random.random() * 0.15
+    a = s * min(l, 1 - l)
+    def f(n):
+        k = (n + h / 30) % 12
+        return round((l - a * max(-1, min(k - 3, 9 - k, 1))) * 255)
+    return [f(0), f(8), f(4)]
+
+def generateColorPair():
+    """生成一对颜色"""
+    c1 = randomVividColor()
+    c2, attempts = 0, 0
+    while True:
+        c2 = randomVividColor()
+        diff = abs(c1[0] - c2[0]) + abs(c1[1] - c2[1]) + abs(c1[2] - c2[2])
+        if diff > 150 or attempts > 20:
+            break
+        attempts += 1
+    return [c1, c2]
+
+GLOBAL_C1, GLOBAL_C2 = generateColorPair()
+
+def globalLerpColor(t):
+    """在全局颜色对之间进行线性插值"""
+    return [
+        round(GLOBAL_C1[0] + (GLOBAL_C2[0] - GLOBAL_C1[0]) * t),
+        round(GLOBAL_C1[1] + (GLOBAL_C2[1] - GLOBAL_C1[1]) * t),
+        round(GLOBAL_C1[2] + (GLOBAL_C2[2] - GLOBAL_C1[2]) * t)
+    ]
+
+def randomGradientColor(text):
+    """生成随机渐变色文本"""
+    lenth = len(text)
+    out = ''
+    for i in range(lenth):
+        t = 0 if lenth <= 1 else i / (lenth - 1)
+        r, g, b = globalLerpColor(t)
+        out += f"\x1b[38;2;{r};{g};{b}m{text[i]}"
+    return out + "\x1b[0m"
+
+class RandomColor:
+    """随机颜色类，用于生成随机渐变色文本"""
+    def __init__(self, text):
+        self.text = text
+    def __str__(self):
+        return randomGradientColor(self.text)
+
 # TAG: 日志系统设置
 # 创建logs目录
-log_dir = Path("./logs/EasyBackuper")
+log_dir = Path(f"./logs/{plugin_name}")
 if not log_dir.exists():
     log_dir.mkdir(parents=True, exist_ok=True)
 
@@ -103,11 +166,11 @@ def plugin_print(text, level="INFO") -> bool:
     level_color = level_colors.get(level, "\x1b[37m")
     
     # 自制Logger消息头
-    logger_head = f"[\x1b[32m{plugin_name}\x1b[0m] [{level_color}{level}\x1b[0m] "
+    logger_head = f"[\x1b[93m{plugin_name}\x1b[0m] [{level_color}{level}\x1b[0m] "
     
     # 使用锁确保线程安全
     with print_lock:
-        print(logger_head + str(text))
+        print(logger_head + str(RandomColor(text)))
     
     # 记录到日志文件
     log_level_map = {
@@ -267,10 +330,8 @@ default_translations = {
         "easybackuper.command.clean.success": "清理完成！",
         "easybackuper.command.init.initializing": "正在初始化配置文件...",
         "easybackuper.command.init.success": "配置文件初始化完成！",
-        "easybackuper.plugin.installed": "%s 安装成功！",
+        "easybackuper.plugin.installed": "%s 已加载",
         "easybackuper.plugin.version": "版本: %s",
-        "easybackuper.plugin.help": "查看帮助：%s",
-        "easybackuper.plugin.copyright": "务必保留原作者信息！",
         "easybackuper.plugin.github": "GitHub 仓库：%s",
         "easybackuper.plugin.status.auto_backup.enabled": "自动备份状态：已启用 (间隔: %s)",
         "easybackuper.plugin.status.auto_backup.disabled": "自动备份状态：未启用",
@@ -284,7 +345,7 @@ default_translations = {
         "easybackuper.plugin.status.debug_cron.disabled": "Debug更多日志状态(Cron)：未启用",
         "easybackuper.logo.author": "作者：",
         "easybackuper.logo.version": "版本：",
-        "easybackuper.plugin.description": "基于 EndStone 的最最最简单的Python热备份插件",
+        "easybackuper.plugin.description": "一个基于 EndStone 的轻量级、高性能、功能全面的Minecraft服务器热备份插件",
         "easybackuper.title.no_players": "没有玩家在线，跳过发送标题消息",
         "easybackuper.lang.init": "初始化语言文件: %s",
         "easybackuper.lang.init_failed": "初始化语言文件失败 %s: %s",
@@ -423,10 +484,8 @@ default_translations = {
         "easybackuper.command.clean.success": "Cleaning completed!",
         "easybackuper.command.init.initializing": "Initializing configuration files...",
         "easybackuper.command.init.success": "Configuration files initialized successfully!",
-        "easybackuper.plugin.installed": "%s installed successfully!",
+        "easybackuper.plugin.installed": "%s Loaded.",
         "easybackuper.plugin.version": "Version: %s",
-        "easybackuper.plugin.help": "View help: %s",
-        "easybackuper.plugin.copyright": "Please keep the original author information!",
         "easybackuper.plugin.github": "GitHub repository: %s",
         "easybackuper.plugin.status.auto_backup.enabled": "Auto backup status: Enabled (interval: %s)",
         "easybackuper.plugin.status.auto_backup.disabled": "Auto backup status: Disabled",
@@ -440,7 +499,7 @@ default_translations = {
         "easybackuper.plugin.status.debug_cron.disabled": "Debug more logs (Cron): Disabled",
         "easybackuper.logo.author": "Author: ",
         "easybackuper.logo.version": "Version: ",
-        "easybackuper.plugin.description": "The simplest Python hot backup plugin based on EndStone",
+        "easybackuper.plugin.description": "A lightweight, high-performance, and feature-rich hot backup plugin for Minecraft servers based on EndStone.",
         "easybackuper.title.no_players": "No players online, skipping title message",
         "easybackuper.lang.init": "Initializing language file: %s",
         "easybackuper.lang.init_failed": "Failed to initialize language file %s: %s",
@@ -1834,71 +1893,69 @@ class EasyBackuperPlugin(Plugin):
         return True
     # TAG: 插件加载后输出 LOGO
     def on_load(self) -> None:
-        plugin_print(
-            """
-===============================================================================================================
-     ********                             ******                     **
-    /**/////                     **   ** /*////**                   /**             ******
-    /**        ******    ****** //** **  /*   /**   ******    ***** /**  ** **   ** /**///**  *****  ******
-    /*******  //////**  **////   //***   /******   //////**  **////*/** ** /**  /** /**  /** **///**//**//*
-    /**////    ******* //*****    /**    /*//// **  ******* /**  // /****  /**  /** /****** /******* /** /
-    /**       **////**  /////**   **     /*    /** **////** /**   **/**/** /**  /** /**///  /**////  /**
-    /********//******** ******   **      /******* //********//***** /**//**//****** /**     //******/***
-    ////////  //////// //////   //       ///////   ////////  /////  //  //  /////// /*     ////// ///
-                            \x1b[33m""" + self.translate('easybackuper.logo.author') + plugin_author[0]
-            + """\x1b[0m                        \x1b[1;30;47m""" + self.translate('easybackuper.logo.version')
-            + success_plugin_version
-            + """[""" + pluginConfig.get("Language") + """]\x1b[0m
-==============================================================================================================="""
-        )
-        plugin_print(
-            "\x1b[36m=============================="
-            + plugin_name
-            + "==============================\x1b[0m"
-        )
-        plugin_print("\x1b[37;43m" + self.translate('easybackuper.plugin.installed', plugin_name) + "\x1b[0m")
-        plugin_print("\x1b[37;43m" + self.translate('easybackuper.plugin.version', success_plugin_version) + "\x1b[0m")
-        plugin_print("\x1b[1;35m" + self.translate('easybackuper.plugin.help', plugin_the_help_link) + "\x1b[0m")
-        plugin_print("\x1b[31m" + self.translate('easybackuper.plugin.copyright') + "\x1b[0m")
-        plugin_print("\x1b[33m" + self.translate('easybackuper.plugin.github', plugin_github_link) + "\x1b[0m")
-        plugin_print("\x1b[36m" + self.translate('easybackuper.plugin.description') + "\x1b[0m")
+        print(RandomColor("███████╗ █████╗ ███████╗██╗   ██╗██████╗  █████╗  ██████╗██╗  ██╗██╗   ██╗██████╗ ███████╗██████╗ "))
+        print(RandomColor("██╔════╝██╔══██╗██╔════╝╚██╗ ██╔╝██╔══██╗██╔══██╗██╔════╝██║ ██╔╝██║   ██║██╔══██╗██╔════╝██╔══██╗"))
+        print(RandomColor("█████╗  ███████║███████╗ ╚████╔╝ ██████╔╝███████║██║     █████╔╝ ██║   ██║██████╔╝█████╗  ██████╔╝"))
+        print(RandomColor("██╔══╝  ██╔══██║╚════██║  ╚██╔╝  ██╔══██╗██╔══██║██║     ██╔═██╗ ██║   ██║██╔═══╝ ██╔══╝  ██╔══██╗"))
+        print(RandomColor("███████╗██║  ██║███████║   ██║   ██████╔╝██║  ██║╚██████╗██║  ██╗╚██████╔╝██║     ███████╗██║  ██║"))
+        print(RandomColor("╚══════╝╚═╝  ╚═╝╚══════╝   ╚═╝   ╚═════╝ ╚═╝  ╚═╝ ╚═════╝╚═╝  ╚═╝ ╚═════╝ ╚═╝     ╚══════╝╚═╝  ╚═╝"))
+        print(RandomColor(f"""                                {self.translate('easybackuper.logo.author')}{plugin_author[0]}               {self.translate('easybackuper.logo.version')}{plugin_version}[{pluginConfig.get("Language")}]"""))
+        plugin_print(f"="*80, "INFO")
+        plugin_print(f"{plugin_name} - {self.translate('easybackuper.plugin.description')}")
+        plugin_print(f"感谢您使用Easy系列插件！")
+        plugin_print(f"本插件使用 {plugin_license} 许可证协议进行发布")
+        plugin_print(f"{self.translate('easybackuper.plugin.github', plugin_github_link)}{plugin_github_link}")
+        plugin_print(f"插件MineBBS资源帖：{plugin_minebbs_link}")
+        plugin_print(f"Easy系列插件交流群：1083195477")
+        plugin_print(f"{self.translate('easybackuper.logo.author')}{plugin_author[0]} | {self.translate('easybackuper.plugin.version', plugin_version)}")
+        
         # 显示功能状态
         if scheduled_tasks_status:
-            plugin_print(f"\x1b[32m" + self.translate('easybackuper.plugin.status.auto_backup.enabled', scheduled_tasks_cron) + "\x1b[0m")
+            plugin_print(self.translate('easybackuper.plugin.status.auto_backup.enabled', scheduled_tasks_cron))
         else:
-            plugin_print("\x1b[31m" + self.translate('easybackuper.plugin.status.auto_backup.disabled') + "\x1b[0m")
+            plugin_print(self.translate('easybackuper.plugin.status.auto_backup.disabled'))
 
         if use_number_detection_status:
-            plugin_print(f"\x1b[32m" + self.translate('easybackuper.plugin.status.auto_clean.enabled', str(use_number_detection_max_number)) + "\x1b[0m")
+            plugin_print(self.translate('easybackuper.plugin.status.auto_clean.enabled', str(use_number_detection_max_number)))
         else:
-            plugin_print("\x1b[31m" + self.translate('easybackuper.plugin.status.auto_clean.disabled') + "\x1b[0m")
+            plugin_print(self.translate('easybackuper.plugin.status.auto_clean.disabled'))
 
         if Debug_MoreLogs:
-            plugin_print("\x1b[32m" + self.translate('easybackuper.plugin.status.debug_console.enabled') + "\x1b[0m")
+            plugin_print(self.translate('easybackuper.plugin.status.debug_console.enabled'))
         else:
-            plugin_print("\x1b[31m" + self.translate('easybackuper.plugin.status.debug_console.disabled') + "\x1b[0m")
+            plugin_print(self.translate('easybackuper.plugin.status.debug_console.disabled'))
 
         if Debug_MoreLogs_Player:
-            plugin_print("\x1b[32m" + self.translate('easybackuper.plugin.status.debug_player.enabled') + "\x1b[0m")
+            plugin_print(self.translate('easybackuper.plugin.status.debug_player.enabled'))
         else:
-            plugin_print("\x1b[31m" + self.translate('easybackuper.plugin.status.debug_player.disabled') + "\x1b[0m")
+            plugin_print(self.translate('easybackuper.plugin.status.debug_player.disabled'))
 
         if Debug_MoreLogs_Cron:
-            plugin_print("\x1b[32m" + self.translate('easybackuper.plugin.status.debug_cron.enabled') + "\x1b[0m")
+            plugin_print(self.translate('easybackuper.plugin.status.debug_cron.enabled'))
         else:
-            plugin_print("\x1b[31m" + self.translate('easybackuper.plugin.status.debug_cron.disabled') + "\x1b[0m")
-        plugin_print(
-            "\x1b[36m=============================="
-            + plugin_name
-            + "==============================\x1b[0m"
-        )
-        print()
+            plugin_print(self.translate('easybackuper.plugin.status.debug_cron.disabled'))
+        plugin_print(f"="*80, "INFO")
+        plugin_print(self.translate('easybackuper.plugin.installed', plugin_name))
 
     def on_enable(self) -> None:
         """
         插件启用时调用
         :return: None
         """
+        # bStats统计功能
+        plugin_id = 29344
+        self._metrics = BStats(self, plugin_id)
+        self._metrics.add_custom_chart(
+            SimplePie("used_language", lambda: pluginConfig.get("Language", "en_US"))
+        )
+        self._metrics.add_custom_chart(
+            SimplePie("auto_backup_enabled", lambda: "enabled" if pluginConfig.get("Scheduled_Tasks", {}).get("Status", False) else "disabled")
+        )
+        self._metrics.add_custom_chart(
+            SimplePie("auto_clean_enabled", lambda: "enabled" if pluginConfig.get("Auto_Clean", {}).get("Use_Number_Detection", {}).get("Status", False) else "disabled")
+        )
+        self._metrics.start()  # 启动定时提交任务
+
         # 初始化语言文件
         # 首先检查插件配置文件夹下的langs文件夹是否存在
         config_lang_dir = plugin_path / "langs"
@@ -1934,6 +1991,7 @@ class EasyBackuperPlugin(Plugin):
         插件禁用时调用
         :return: None
         """
+        self._metrics.shutdown() # 关闭bStats统计
         plugin_print(self.translate("easybackuper.plugin.disabling", plugin_name), level="INFO")
 
         # 停止自动备份功能
