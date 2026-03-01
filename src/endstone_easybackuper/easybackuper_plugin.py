@@ -19,11 +19,12 @@ from .bstats import BStats, SimplePie
 plugin_name = "EasyBackuper"
 plugin_name_smallest = "easybackuper"
 plugin_description = "一个基于 EndStone 的轻量级、高性能、功能全面的Minecraft服务器热备份插件 / A lightweight, high-performance, and feature-rich hot backup plugin for Minecraft servers based on EndStone."
-plugin_version = "0.4.3.4"
+plugin_version = "0.4.4"
 plugin_author = ["梦涵LOVE"]
 plugin_website = "https://www.minebbs.com/resources/easybackuper-eb-minecraft.14896/"
 plugin_github_link = "https://github.com/MengHanLOVE1027/endstone-easybackuper"
 plugin_minebbs_link = "https://www.minebbs.com/resources/easybackuper-eb-minecraft.14896/"
+plugin_update_url = "https://raw.githubusercontent.com/MengHanLOVE1027/endstone-easybackuper/refs/heads/main/update_versions.json"
 plugin_license = "AGPL-3.0"
 plugin_copyright = "务必保留原作者信息！"
 
@@ -643,6 +644,7 @@ class EasyBackuperPlugin(Plugin):
     version = plugin_version
     authors = plugin_author
     website = plugin_website
+    update_url = plugin_update_url
 
     # NOTE: 注册命令
     commands = {

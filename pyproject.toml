@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "endstone-easybackuper"
-version = "0.4.3.4"
+version = "0.4.4"
 authors = [
     { name = "MengHanLOVE", email = "2193438288@qq.com" },
 ]

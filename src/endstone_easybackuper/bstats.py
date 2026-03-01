@@ -266,10 +266,12 @@ class BStats:
 
             if response.status_code == 200:
                 bstats_logger.info("遥测数据上报成功！")
-                bstats_logger.info(f"响应内容: {response.text if response.text else '(空)'}")
+                if self.config.log_sent_data_enabled:
+                    bstats_logger.info(f"响应内容: {response.text if response.text else '(空)'}")
             else:
                 bstats_logger.warning(f"上报失败，状态码: {response.status_code}")
-                bstats_logger.warning(f"返回结果: {response.text if response.text else '(空)'}")
+                if self.config.log_sent_data_enabled:
+                    bstats_logger.warning(f"返回结果: {response.text if response.text else '(空)'}")
 
         except Exception as e:
             bstats_logger.error(f"网络请求异常: {e}")
@@ -312,9 +314,10 @@ class BStats:
         # 输出启动日志
         bstats_logger.info(f"{self.plugin_name} 遥测模块已启动。")
         bstats_logger.info(f"首次数据将在 30 秒后发送,之后每 30 分钟发送一次。")
-        bstats_logger.info(f"插件ID: {self.service_id}, 插件版本: {self.plugin_version}")
-        bstats_logger.info(f"遥测状态: {'已启用' if self.config.enabled else '已禁用'}")
-        bstats_logger.info(f"调试模式: {'已启用' if self.config.log_sent_data_enabled else '已禁用'}")
+        if self.config.log_sent_data_enabled:
+            bstats_logger.info(f"插件ID: {self.service_id}, 插件版本: {self.plugin_version}")
+            bstats_logger.info(f"遥测状态: {'已启用' if self.config.enabled else '已禁用'}")
+            bstats_logger.info(f"调试模式: {'已启用' if self.config.log_sent_data_enabled else '已禁用'}")
 
     def shutdown(self):
         """关闭 bStats 遥测"""

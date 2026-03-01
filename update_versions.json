@@ -1,0 +1,11 @@
+{
+    "latest_version": "0.4.4",
+    "versions": {
+        "0.4.4": {
+            "download_url": "https://github.com/MengHanLOVE1027/endstone-easybackuper/releases/download/v0.4.4/endstone_easybeckuper-0.4.4-py3-none-any.whl",
+            "update_content": "更新版本号至 v0.4.4，并优化遥测日志输出，适配EasyCheckUpdate",
+            "author": "梦涵LOVE",
+            "update_time": "2026-03-01 11:59:00"
+        }
+    }
+}
