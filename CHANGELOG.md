@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+# [0.4.4.3](https://github.com/MengHanLOVE1027/endstone-easybackuper/compare/v0.4.4.2...v0.4.4.3) (2026-03-29)
+### Testing
+
+* 测试一下阿巴阿巴 ([17e7ecc](https://github.com/MengHanLOVE1027/endstone-easybackuper/commit/17e7ecc5e6ffc90750088bf690ac345351f029bd)) [@梦涵LOVE](https://github.com/梦涵LOVE)
+
+
+
 # [0.4.4.2](https://github.com/MengHanLOVE1027/endstone-easybackuper/compare/v0.4.4.1...v0.4.4.2) (2026-03-29)
 ### Bug Fixes
 
