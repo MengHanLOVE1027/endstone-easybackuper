@@ -8,7 +8,7 @@ permissions:
   contents: write
 
 jobs:
-  build:
+  build-and-publish:
     if: github.event.pull_request.merged == true
     runs-on: ubuntu-latest
     steps:
@@ -47,57 +47,14 @@ jobs:
           GOOS=windows GOARCH=amd64 go build -ldflags="-s -w" -o restore_handler_en.exe main_en.go
           ls -la restore_handler_en.exe
 
-      - name: Upload build artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: release-artifacts
-          path: |
-            dist/*.whl
-            dist/*.tar.gz
-            go/restore_handler/restore_handler.exe
-            go/restore_handler_en/restore_handler_en.exe
-          retention-days: 1
-
-  publish:
-    needs: build
-    if: github.event.pull_request.merged == true
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Download artifacts
-        id: download
-        uses: actions/download-artifact@v4
-        with:
-          name: release-artifacts
-          path: artifacts
-        continue-on-error: true
-
-      - name: Build if artifacts missing
-        if: steps.download.outcome == 'failure' || !contains(steps.download.conclusion, 'success')
+      - name: Collect artifacts
         run: |
-          echo "Artifacts not found, building from source..."
-
-          # Set up Python
-          pip install build hatchling
-          python -m build
-
-          # Set up Go and build (Windows)
-          GOOS=windows GOARCH=amd64 go build -ldflags="-s -w" -o restore_handler.exe ./go/restore_handler/main.go
-          GOOS=windows GOARCH=amd64 go build -ldflags="-s -w" -o restore_handler_en.exe ./go/restore_handler_en/main_en.go
-
-          # Move to artifacts folder
           mkdir -p artifacts
-          mv dist/*.whl artifacts/ 2>/dev/null || true
-          mv dist/*.tar.gz artifacts/ 2>/dev/null || true
-          mv restore_handler.exe artifacts/ 2>/dev/null || true
-          mv restore_handler_en.exe artifacts/ 2>/dev/null || true
-
-      - name: List artifacts
-        run: |
-          echo "Artifacts to upload:"
-          ls -la artifacts/ || echo "No artifacts found"
+          cp dist/*.whl artifacts/ 2>/dev/null || true
+          cp dist/*.tar.gz artifacts/ 2>/dev/null || true
+          cp go/restore_handler/restore_handler.exe artifacts/ 2>/dev/null || true
+          cp go/restore_handler_en/restore_handler_en.exe artifacts/ 2>/dev/null || true
+          ls -la artifacts/
 
       - name: Extract version from PR title
         id: get_version
