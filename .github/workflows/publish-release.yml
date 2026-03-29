@@ -15,7 +15,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0
+          fetch-depth: 100
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -31,13 +31,6 @@ jobs:
         uses: actions/setup-go@v5
         with:
           go-version: '1.21'
-
-      - name: Install git-cliff
-        run: |
-          curl -L https://github.com/orhun/git-cliff/releases/latest/download/git-cliff-x86_64-unknown-linux-gnu.tar.gz -o git-cliff.tar.gz
-          tar -xzf git-cliff.tar.gz
-          chmod +x git-cliff
-          ./git-cliff --version
 
       - name: Build Python packages
         run: |
@@ -87,14 +80,10 @@ jobs:
           echo "version=v$VERSION" >> $GITHUB_OUTPUT
           echo "Version extracted: $VERSION"
 
-      - name: Generate changelog
-        id: changelog
+      - name: Get PR body for changelog
+        id: pr_info
         run: |
-          CHANGELOG=$(git-cliff --unreleased --tag ${{ steps.get_version.outputs.version }} -o -)
-          CHANGELOG="${CHANGELOG//'%'/'%25'}"
-          CHANGELOG="${CHANGELOG//$'\n'/'%0A'}"
-          CHANGELOG="${CHANGELOG//$'\r'/'%0D'}"
-          echo "changelog=$CHANGELOG" >> $GITHUB_OUTPUT
+          echo "body=${{ github.event.pull_request.body }}" >> $GITHUB_OUTPUT
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
@@ -118,9 +107,9 @@ jobs:
 
             ---
 
-            ## 📝 Changelog | 更新日志
+            ## 📝 Changes | 变更内容
 
-            ${{ steps.changelog.outputs.changelog }}
+            ${{ github.event.pull_request.body }}
 
             ---
 
