@@ -12,5 +12,7 @@ permissions:
 jobs:
   call-prepare:
     uses: leoweyr/github-release-workflow/.github/workflows/reusable-prepare-release.yml@develop
+    with:
+      base-branch: 'main'
     secrets:
       ACCESS_TOKEN: ${{ secrets.GITHUB_TOKEN }}
