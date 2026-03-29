@@ -14,6 +14,8 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -30,6 +32,13 @@ jobs:
         with:
           go-version: '1.21'
 
+      - name: Install git-cliff
+        run: |
+          curl -L https://github.com/orhun/git-cliff/releases/latest/download/git-cliff-x86_64-unknown-linux-gnu.tar.gz -o git-cliff.tar.gz
+          tar -xzf git-cliff.tar.gz
+          chmod +x git-cliff
+          ./git-cliff --version
+
       - name: Build Python packages
         run: |
           python -m build
@@ -39,13 +48,21 @@ jobs:
         run: |
           cd go/restore_handler
           GOOS=windows GOARCH=amd64 go build -ldflags="-s -w" -o restore_handler.exe main.go
-          ls -la restore_handler.exe
 
       - name: Build Go restore_handler_en (Windows amd64)
         run: |
           cd go/restore_handler_en
           GOOS=windows GOARCH=amd64 go build -ldflags="-s -w" -o restore_handler_en.exe main_en.go
-          ls -la restore_handler_en.exe
+
+      - name: Build Go restore_handler (Linux amd64)
+        run: |
+          cd go/restore_handler
+          GOOS=linux GOARCH=amd64 go build -ldflags="-s -w" -o restore_handler_linux main.go
+
+      - name: Build Go restore_handler_en (Linux amd64)
+        run: |
+          cd go/restore_handler_en
+          GOOS=linux GOARCH=amd64 go build -ldflags="-s -w" -o restore_handler_en_linux main_en.go
 
       - name: Collect artifacts
         run: |
@@ -54,6 +71,8 @@ jobs:
           cp dist/*.tar.gz artifacts/ 2>/dev/null || true
           cp go/restore_handler/restore_handler.exe artifacts/ 2>/dev/null || true
           cp go/restore_handler_en/restore_handler_en.exe artifacts/ 2>/dev/null || true
+          cp go/restore_handler/restore_handler_linux artifacts/ 2>/dev/null || true
+          cp go/restore_handler_en/restore_handler_en_linux artifacts/ 2>/dev/null || true
           ls -la artifacts/
 
       - name: Extract version from PR title
@@ -68,15 +87,61 @@ jobs:
           echo "version=v$VERSION" >> $GITHUB_OUTPUT
           echo "Version extracted: $VERSION"
 
+      - name: Generate changelog
+        id: changelog
+        run: |
+          CHANGELOG=$(git-cliff --unreleased --tag ${{ steps.get_version.outputs.version }} -o -)
+          CHANGELOG="${CHANGELOG//'%'/'%25'}"
+          CHANGELOG="${CHANGELOG//$'\n'/'%0A'}"
+          CHANGELOG="${CHANGELOG//$'\r'/'%0D'}"
+          echo "changelog=$CHANGELOG" >> $GITHUB_OUTPUT
+
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ steps.get_version.outputs.version }}
+          name: "Release ${{ steps.get_version.outputs.version }}"
+          body: |
+            ## 📦 Downloads | 下载
+
+            ### Python Package
+            - `*.whl` - Python wheel package
+            - `*.tar.gz` - Source code
+
+            ### Windows Executable
+            - `restore_handler.exe` - Windows version (zh-CN)
+            - `restore_handler_en.exe` - Windows version (en)
+
+            ### Linux Executable
+            - `restore_handler_linux` - Linux version (zh-CN)
+            - `restore_handler_en_linux` - Linux version (en)
+
+            ---
+
+            ## 📝 Changelog | 更新日志
+
+            ${{ steps.changelog.outputs.changelog }}
+
+            ---
+
+            ## 🔧 Installation | 安装
+
+            ### Python Package
+            ```bash
+            pip install endstone-easybackuper-*.whl
+            ```
+
+            ### Manual Installation
+            Download the appropriate executable for your platform and place it in the server plugins directory.
+
+            如需手动安装，请下载对应平台的执行文件并放置在服务器插件目录中。
           draft: false
           prerelease: false
           files: |
             artifacts/*.whl
             artifacts/*.tar.gz
             artifacts/*.exe
+            artifacts/restore_handler_linux
+            artifacts/restore_handler_en_linux
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
