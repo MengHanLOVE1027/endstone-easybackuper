@@ -1,0 +1,14 @@
+name: Publish Release
+
+on:
+  pull_request:
+    types: [closed]
+
+permissions:
+  contents: write
+
+jobs:
+  call-publish:
+    uses: leoweyr/github-release-workflow/.github/workflows/reusable-publish-release.yml@develop
+    secrets:
+      ACCESS_TOKEN: ${{ secrets.GITHUB_TOKEN }}
