@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+# [0.4.4.2](https://github.com/MengHanLOVE1027/endstone-easybackuper/compare/v0.4.4.1...v0.4.4.2) (2026-03-29)
+### Bug Fixes
+
+* 简化构建流程 ([ed3839e](https://github.com/MengHanLOVE1027/endstone-easybackuper/commit/ed3839e52c6330594747abe59ae1cb4434b55e3e)) [@梦涵LOVE](https://github.com/梦涵LOVE)
+
+
+
 # [0.4.4.1](https://github.com/MengHanLOVE1027/endstone-easybackuper/compare/v0.4.4...v0.4.4.1) (2026-03-29)
 ### Bug Fixes
 
