@@ -83,7 +83,11 @@ jobs:
       - name: Get PR body for changelog
         id: pr_info
         run: |
-          echo "body=${{ github.event.pull_request.body }}" >> $GITHUB_OUTPUT
+          BODY='${{ github.event.pull_request.body }}'
+          BODY="${BODY//'%'/'%25'}"
+          BODY="${BODY//$'\n'/'%0A'}"
+          BODY="${BODY//$'\r'/'%0D'}"
+          echo "body=$BODY" >> $GITHUB_OUTPUT
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
