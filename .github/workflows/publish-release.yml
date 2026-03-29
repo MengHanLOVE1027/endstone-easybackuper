@@ -8,7 +8,118 @@ permissions:
   contents: write
 
 jobs:
-  call-publish:
-    uses: leoweyr/github-release-workflow/.github/workflows/reusable-publish-release.yml@develop
-    secrets:
-      ACCESS_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  build:
+    if: github.event.pull_request.merged == true
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+
+      - name: Install Python build dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install build hatchling
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.21'
+
+      - name: Build Python packages
+        run: |
+          python -m build
+          ls -la dist/
+
+      - name: Build Go restore_handler (Windows amd64)
+        run: |
+          cd go/restore_handler
+          GOOS=windows GOARCH=amd64 go build -ldflags="-s -w" -o restore_handler.exe main.go
+          ls -la restore_handler.exe
+
+      - name: Build Go restore_handler_en (Windows amd64)
+        run: |
+          cd go/restore_handler_en
+          GOOS=windows GOARCH=amd64 go build -ldflags="-s -w" -o restore_handler_en.exe main_en.go
+          ls -la restore_handler_en.exe
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-artifacts
+          path: |
+            dist/*.whl
+            dist/*.tar.gz
+            go/restore_handler/restore_handler.exe
+            go/restore_handler_en/restore_handler_en.exe
+          retention-days: 1
+
+  publish:
+    needs: build
+    if: github.event.pull_request.merged == true
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Download artifacts
+        id: download
+        uses: actions/download-artifact@v4
+        with:
+          name: release-artifacts
+          path: artifacts
+        continue-on-error: true
+
+      - name: Build if artifacts missing
+        if: steps.download.outcome == 'failure' || !contains(steps.download.conclusion, 'success')
+        run: |
+          echo "Artifacts not found, building from source..."
+
+          # Set up Python
+          pip install build hatchling
+          python -m build
+
+          # Set up Go and build (Windows)
+          GOOS=windows GOARCH=amd64 go build -ldflags="-s -w" -o restore_handler.exe ./go/restore_handler/main.go
+          GOOS=windows GOARCH=amd64 go build -ldflags="-s -w" -o restore_handler_en.exe ./go/restore_handler_en/main_en.go
+
+          # Move to artifacts folder
+          mkdir -p artifacts
+          mv dist/*.whl artifacts/ 2>/dev/null || true
+          mv dist/*.tar.gz artifacts/ 2>/dev/null || true
+          mv restore_handler.exe artifacts/ 2>/dev/null || true
+          mv restore_handler_en.exe artifacts/ 2>/dev/null || true
+
+      - name: List artifacts
+        run: |
+          echo "Artifacts to upload:"
+          ls -la artifacts/ || echo "No artifacts found"
+
+      - name: Extract version from PR title
+        id: get_version
+        run: |
+          PR_TITLE="${{ github.event.pull_request.title }}"
+          VERSION=$(echo "$PR_TITLE" | grep -oE '[0-9]+(\.[0-9]+)+' | head -1)
+          if [ -z "$VERSION" ]; then
+            VERSION="${{ github.event.pull_request.head.ref }}"
+            VERSION=$(echo "$VERSION" | grep -oE '[0-9]+(\.[0-9]+)+' | head -1)
+          fi
+          echo "version=v$VERSION" >> $GITHUB_OUTPUT
+          echo "Version extracted: $VERSION"
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.get_version.outputs.version }}
+          draft: false
+          prerelease: false
+          files: |
+            artifacts/*.whl
+            artifacts/*.tar.gz
+            artifacts/*.exe
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
