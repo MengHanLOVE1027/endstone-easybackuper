@@ -143,8 +143,8 @@ jobs:
 
           # ── 版本类型标签 ──
           case "$VERSION" in
-            *beta*|*alpha*|*rc*|*dev*) TYPE="🧪 测试版" ; LABEL="Pre-release" ;;
-            *)                         TYPE="🚀 正式版" ; LABEL="Stable"   ;;
+            *beta*|*alpha*|*rc*|*dev*) TYPE="🧪 测试版" ;;
+            *)                         TYPE="🚀 正式版" ;;
           esac
 
           # ── 上一版本 tag ──
@@ -168,51 +168,46 @@ jobs:
           fi
 
           DETAILS="${DETAILS:-（暂无提交信息）}"
+          AUTHORS="${AUTHORS:-（暂无）}"
 
-          # ── 组装 Release Body ──
-          cat > /tmp/release_body.md <<'BODYEOF'
-          ## TYPE_TOKEN : EasyBackuper vVERSION_TOKEN
+          # ── 直接写入 Release Body（使用双引号 heredoc 展开变量） ──
+          cat > /tmp/release_body.md <<BODYEOF
+          ## ${TYPE}: EasyBackuper v${VERSION}
 
           ### 📦 下载 · Downloads
 
           | 平台 | 文件 | 语言 |
           |------|------|------|
-          | 🐍 Python | `*.whl` | — |
-          | 🐍 Python | `*.tar.gz` | — |
-          | 🪟 Windows | `restore_handler.exe` | 中文 |
-          | 🪟 Windows | `restore_handler_en.exe` | English |
-          | 🐧 Linux | `restore_handler_linux` | 中文 |
-          | 🐧 Linux | `restore_handler_en_linux` | English |
+          | 🐍 Python | \`*.whl\` | — |
+          | 🐍 Python | \`*.tar.gz\` | — |
+          | 🪟 Windows | \`restore_handler.exe\` | 中文 |
+          | 🪟 Windows | \`restore_handler_en.exe\` | English |
+          | 🐧 Linux | \`restore_handler_linux\` | 中文 |
+          | 🐧 Linux | \`restore_handler_en_linux\` | English |
 
           ### 📝 更新内容 · Changes
 
-          DETAILS_TOKEN
+          ${DETAILS}
 
           ### 👥 贡献者 · Contributors
 
-          AUTHORS_TOKEN
+          ${AUTHORS}
 
           ### 🔧 安装 · Installation
 
-          ```bash
+          \`\`\`bash
           pip install endstone_easybackuper-*.whl
-          ```
+          \`\`\`
 
           或从下方 Assets 下载对应平台的可执行文件，放入插件目录即可。
           BODYEOF
-
-          # 替换占位符
-          sed -i "s/TYPE_TOKEN/${TYPE}/g"          /tmp/release_body.md
-          sed -i "s/VERSION_TOKEN/${VERSION}/g"    /tmp/release_body.md
-          sed -i "s/DETAILS_TOKEN/${DETAILS//$'\n'/\\n}/g" /tmp/release_body.md
-          sed -i "s/AUTHORS_TOKEN/${AUTHORS:-（暂无）}/g"  /tmp/release_body.md
 
           # 追加 Full Changelog 链接
           if [ -n "$CHANGELOG_LINK" ]; then
             printf '\n**Full Changelog**: %s\n' "$CHANGELOG_LINK" >> /tmp/release_body.md
           fi
 
-          # 输出 body 到 step output（多行安全写法）
+          # ── 写入 step output ──
           {
             echo 'body<<BODYEOF'
             cat /tmp/release_body.md
