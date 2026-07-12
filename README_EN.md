@@ -17,6 +17,7 @@
 [![README](https://img.shields.io/badge/README-中文|Chinese-blue)](README.md) [![README_EN](https://img.shields.io/badge/README-英文|English-blue)](README_EN.md)
 
 [![Github Version](https://img.shields.io/github/v/release/MengHanLOVE1027/endstone-easybackuper)](https://github.com/MengHanLOVE1027/endstone-easybackuper/releases) [![GitHub License](https://img.shields.io/badge/License-AGPL%203.0-blue.svg)](https://opensource.org/licenses/AGPL-3.0) [![Python](https://img.shields.io/badge/Python-3.8+-green.svg)](https://www.python.org/) [![Platform](https://img.shields.io/badge/Platform-EndStone-9cf.svg)](https://endstone.io) [![Downloads](https://img.shields.io/github/downloads/MengHanLOVE1027/endstone-easybackuper/total.svg)](https://github.com/MengHanLOVE1027/endstone-easybackuper/releases)
+![](https://img.shields.io/github/v/release/MengHanLOVE1027/endstone-easybackuper?style=flat-square&logo=github&color=orange&label=Version) ![](https://img.shields.io/github/downloads/MengHanLOVE1027/endstone-easybackuper/total?style=flat-square&logo=github&color=33ccff&label=Downloads) ![](https://img.shields.io/github/languages/top/MengHanLOVE1027/endstone-easybackuper?style=flat-square&logo=python&color=yellow) ![](https://img.shields.io/github/stars/MengHanLOVE1027/endstone-easybackuper?style=flat-square&logo=github&color=yellow&label=Stars) ![](https://img.shields.io/github/last-commit/MengHanLOVE1027/endstone-easybackuper?style=flat-square&color=lightgrey) ![](https://komarev.com/ghpvc/?username=MengHanLOVE1027&repo=endstone-easybackuper&color=green&style=flat-square&label=Views)
 
 </div>
 
@@ -71,7 +72,7 @@ Server Root Directory/
 ### Installation Steps
 
 1. **Download the Plugin**
-   - Download the latest version from the [Releases page](https://github.com/MengHanLOVE1027/EasyBackuper/releases)
+   - Download the latest version from the [Releases page](https://github.com/MengHanLOVE1027/endstone-easybackuper/releases)
    - Or get it from [MineBBS](https://www.minebbs.com/resources/easybackuper-eb-minecraft.14896/)
 
 2. **Install the Plugin**
@@ -212,7 +213,7 @@ Configuration file location: `plugins/EasyBackuper/config/EasyBackuper.json`
 
 | Command            | Permission | Description                       |
 | ------------------ | ---------- | --------------------------------- |
-| `/restore list`    | OP         | List all available backups        |
+| `/restore list <count>` | OP         | List available backups (optional count) |
 | `/restore <index>` | OP         | Restore specified backup by index |
 | `/restore`         | OP         | Show restoration help             |
 
@@ -295,7 +296,7 @@ The restoration handler (`restore_handler.exe`) is used to safely restore backup
 **Troubleshooting Methods:**
 1. Confirm `restore_handler.exe` exists
    ```bash
-   ls plugins/EasyBackiper/restore_handler.exe
+   ls plugins/EasyBackuper/restore_handler.exe
    ```
 2. Check restoration handler permissions
    ```bash
