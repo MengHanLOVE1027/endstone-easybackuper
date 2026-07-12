@@ -40,7 +40,7 @@ jobs:
         id: version
         shell: bash
         run: |
-          VERSION=$(python -c "import re;c=open('src/endstone_yessential/constant.py').read();m=re.search(r'plugin_version\s*=\s*\"(.+?)\"',c);print(m.group(1) if m else '0.0.0')")
+          VERSION=$(python -c "import re;c=open('src/endstone_easybackuper/constant.py').read();m=re.search(r'plugin_version\s*=\s*\"(.+?)\"',c);print(m.group(1) if m else '0.0.0')")
           echo "version=$VERSION" >> "$GITHUB_OUTPUT"
 
       - name: Build PR body
@@ -69,7 +69,7 @@ jobs:
           esac
 
           BODY=$(cat <<EOF
-          ## ${TYPE}: YEssential v${VERSION}
+          ## ${TYPE}: EasyBackuper v${VERSION}
 
           ### 📝 更新内容
           ${COMMITS}
