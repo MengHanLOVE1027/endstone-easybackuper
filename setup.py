@@ -1,11 +1,16 @@
+import re
 import setuptools
 
 with open("README.md", "r", encoding="utf-8") as fh:
     long_description = fh.read()
 
+with open("src/endstone_easybackuper/easybackuper_plugin.py", "r") as f:
+    m = re.search(r'plugin_version\s*=\s*"(.+?)"', f.read())
+    version = m.group(1) if m else "0.0.0"
+
 setuptools.setup(
     name="endstone-easybackuper",
-    version="0.4.4",
+    version=version,
     author="MengHanLOVE",
     url='https://github.com/MengHanLOVE1027',
     author_email="2193438288@qq.com",
