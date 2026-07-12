@@ -9,20 +9,24 @@ permissions:
 
 jobs:
   build-and-publish:
-    if: github.event.pull_request.merged == true
+    if: github.event.pull_request.merged == true && github.event.pull_request.base.ref == 'main'
     runs-on: ubuntu-latest
+
     steps:
+      # ────────────────────────────────────
+      # 1. 环境准备
+      # ────────────────────────────────────
       - name: Checkout code
         uses: actions/checkout@v4
         with:
-          fetch-depth: 100
+          fetch-depth: 0
 
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.x'
 
-      - name: Install Python build dependencies
+      - name: Install Python build tools
         run: |
           python -m pip install --upgrade pip
           pip install build hatchling
@@ -32,104 +36,198 @@ jobs:
         with:
           go-version: '1.21'
 
-      - name: Build Python packages
+      # ────────────────────────────────────
+      # 2. 版本提取 & tag 冲突检查
+      # ────────────────────────────────────
+      - name: Extract version from source
+        id: version
+        shell: bash
+        run: |
+          VERSION=$(python -c "
+          import re
+          c = open('src/endstone_easybackuper/easybackuper_plugin.py').read()
+          m = re.search(r'^plugin_version\s*=\s*\"(.+?)\"', c, re.M)
+          print(m.group(1) if m else '0.0.0')
+          ")
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "Extracted version: $VERSION"
+
+      - name: Check for existing tag
+        id: check_tag
+        shell: bash
+        run: |
+          git fetch --tags --force
+          TAG="v${{ steps.version.outputs.version }}"
+          if git rev-parse "$TAG" >/dev/null 2>&1; then
+            echo "exists=true"  >> "$GITHUB_OUTPUT"
+            echo "::warning::Tag $TAG already exists — release will be skipped"
+          else
+            echo "exists=false" >> "$GITHUB_OUTPUT"
+            echo "Tag $TAG is available"
+          fi
+
+      # ────────────────────────────────────
+      # 3. 构建
+      # ────────────────────────────────────
+      - name: Build Python wheel
+        if: steps.check_tag.outputs.exists == 'false'
         run: |
           python -m build
+          echo "----- dist/ -----"
           ls -la dist/
 
-      - name: Build Go restore_handler (Windows amd64)
+      - name: Build Go — restore_handler (Windows)
+        if: steps.check_tag.outputs.exists == 'false'
+        working-directory: go/restore_handler
         run: |
-          cd go/restore_handler
           GOOS=windows GOARCH=amd64 go build -ldflags="-s -w" -o restore_handler.exe main.go
+          echo "Built: restore_handler.exe"
 
-      - name: Build Go restore_handler_en (Windows amd64)
+      - name: Build Go — restore_handler_en (Windows)
+        if: steps.check_tag.outputs.exists == 'false'
+        working-directory: go/restore_handler_en
         run: |
-          cd go/restore_handler_en
           GOOS=windows GOARCH=amd64 go build -ldflags="-s -w" -o restore_handler_en.exe main_en.go
+          echo "Built: restore_handler_en.exe"
 
-      - name: Build Go restore_handler (Linux amd64)
+      - name: Build Go — restore_handler (Linux)
+        if: steps.check_tag.outputs.exists == 'false'
+        working-directory: go/restore_handler
         run: |
-          cd go/restore_handler
           GOOS=linux GOARCH=amd64 go build -ldflags="-s -w" -o restore_handler_linux main.go
+          echo "Built: restore_handler_linux"
 
-      - name: Build Go restore_handler_en (Linux amd64)
+      - name: Build Go — restore_handler_en (Linux)
+        if: steps.check_tag.outputs.exists == 'false'
+        working-directory: go/restore_handler_en
         run: |
-          cd go/restore_handler_en
           GOOS=linux GOARCH=amd64 go build -ldflags="-s -w" -o restore_handler_en_linux main_en.go
+          echo "Built: restore_handler_en_linux"
 
+      # ────────────────────────────────────
+      # 4. 收集产物
+      # ────────────────────────────────────
       - name: Collect artifacts
+        if: steps.check_tag.outputs.exists == 'false'
+        shell: bash
         run: |
           mkdir -p artifacts
-          cp dist/*.whl artifacts/ 2>/dev/null || true
+
+          # Python
+          cp dist/*.whl   artifacts/ 2>/dev/null || true
           cp dist/*.tar.gz artifacts/ 2>/dev/null || true
-          cp go/restore_handler/restore_handler.exe artifacts/ 2>/dev/null || true
+
+          # Go — Windows
+          cp go/restore_handler/restore_handler.exe    artifacts/ 2>/dev/null || true
           cp go/restore_handler_en/restore_handler_en.exe artifacts/ 2>/dev/null || true
-          cp go/restore_handler/restore_handler_linux artifacts/ 2>/dev/null || true
+
+          # Go — Linux
+          cp go/restore_handler/restore_handler_linux    artifacts/ 2>/dev/null || true
           cp go/restore_handler_en/restore_handler_en_linux artifacts/ 2>/dev/null || true
+
+          echo "----- artifacts/ -----"
           ls -la artifacts/
 
-      - name: Extract version from PR title
-        id: get_version
+      # ────────────────────────────────────
+      # 5. 生成 Release 说明
+      # ────────────────────────────────────
+      - name: Generate release notes
+        id: notes
+        if: steps.check_tag.outputs.exists == 'false'
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          PR_TITLE="${{ github.event.pull_request.title }}"
-          VERSION=$(echo "$PR_TITLE" | grep -oE '[0-9]+(\.[0-9]+)+' | head -1)
-          if [ -z "$VERSION" ]; then
-            VERSION="${{ github.event.pull_request.head.ref }}"
-            VERSION=$(echo "$VERSION" | grep -oE '[0-9]+(\.[0-9]+)+' | head -1)
+          set -e
+          VERSION="${{ steps.version.outputs.version }}"
+
+          # ── 版本类型标签 ──
+          case "$VERSION" in
+            *beta*|*alpha*|*rc*|*dev*) TYPE="🧪 测试版" ;;
+            *)                         TYPE="🚀 正式版" ;;
+          esac
+
+          # ── 上一版本 tag ──
+          PREV_TAG=$(git tag --sort=-v:refname | grep -v "v${VERSION}" | head -n1)
+
+          # ── 提交详情 ──
+          if [ -n "$PREV_TAG" ]; then
+            DETAILS=$(gh api "repos/${{ github.repository }}/compare/${PREV_TAG}...HEAD" \
+              --jq '[.commits[]? | select(.author.login != "github-actions[bot]")] | map("- \(.commit.message | split("\n")[0]) (@\(.author.login))") | join("\n")' \
+              2>/dev/null || echo "")
+
+            AUTHORS=$(gh api "repos/${{ github.repository }}/compare/${PREV_TAG}...HEAD" \
+              --jq '[.commits[]?.author.login // empty] | unique | map(select(. != "github-actions[bot]")) | map("@" + .) | join(" ")' \
+              2>/dev/null || echo "")
+
+            CHANGELOG_LINK="https://github.com/${{ github.repository }}/compare/${PREV_TAG}...v${VERSION}"
+          else
+            DETAILS="- 🎉 EasyBackuper v${VERSION} 首次发布"
+            AUTHORS=""
+            CHANGELOG_LINK=""
           fi
-          echo "version=v$VERSION" >> $GITHUB_OUTPUT
-          echo "Version extracted: $VERSION"
 
-      - name: Get PR body for changelog
-        id: pr_info
-        run: |
-          BODY='${{ github.event.pull_request.body }}'
-          BODY="${BODY//'%'/'%25'}"
-          BODY="${BODY//$'\n'/'%0A'}"
-          BODY="${BODY//$'\r'/'%0D'}"
-          echo "body=$BODY" >> $GITHUB_OUTPUT
+          DETAILS="${DETAILS:-（暂无提交信息）}"
+          AUTHORS="${AUTHORS:-（暂无）}"
 
+          # ── 直接写入 Release Body（使用双引号 heredoc 展开变量） ──
+          cat > /tmp/release_body.md <<BODYEOF
+          ## ${TYPE}: EasyBackuper v${VERSION}
+
+          ### 📦 下载 · Downloads
+
+          | 平台 | 文件 | 语言 |
+          |------|------|------|
+          | 🐍 Python | \`*.whl\` | — |
+          | 🐍 Python | \`*.tar.gz\` | — |
+          | 🪟 Windows | \`restore_handler.exe\` | 中文 |
+          | 🪟 Windows | \`restore_handler_en.exe\` | English |
+          | 🐧 Linux | \`restore_handler_linux\` | 中文 |
+          | 🐧 Linux | \`restore_handler_en_linux\` | English |
+
+          ### 📝 更新内容 · Changes
+
+          ${DETAILS}
+
+          ### 👥 贡献者 · Contributors
+
+          ${AUTHORS}
+
+          ### 🔧 安装 · Installation
+
+          \`\`\`bash
+          pip install endstone_easybackuper-*.whl
+          \`\`\`
+
+          或从下方 Assets 下载对应平台的可执行文件，放入插件目录即可。
+          BODYEOF
+
+          # 追加 Full Changelog 链接
+          if [ -n "$CHANGELOG_LINK" ]; then
+            printf '\n**Full Changelog**: %s\n' "$CHANGELOG_LINK" >> /tmp/release_body.md
+          fi
+
+          # ── 写入 step output ──
+          {
+            echo 'body<<BODYEOF'
+            cat /tmp/release_body.md
+            echo 'BODYEOF'
+          } >> "$GITHUB_OUTPUT"
+
+          echo "Release notes generated"
+
+      # ────────────────────────────────────
+      # 6. 发布 Release
+      # ────────────────────────────────────
       - name: Create GitHub Release
+        if: steps.check_tag.outputs.exists == 'false'
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: ${{ steps.get_version.outputs.version }}
-          name: "Release ${{ steps.get_version.outputs.version }}"
-          body: |
-            ## 📦 Downloads | 下载
-
-            ### Python Package
-            - `*.whl` - Python wheel package
-            - `*.tar.gz` - Source code
-
-            ### Windows Executable
-            - `restore_handler.exe` - Windows version (zh-CN)
-            - `restore_handler_en.exe` - Windows version (en)
-
-            ### Linux Executable
-            - `restore_handler_linux` - Linux version (zh-CN)
-            - `restore_handler_en_linux` - Linux version (en)
-
-            ---
-
-            ## 📝 Changes | 变更内容
-
-            ${{ github.event.pull_request.body }}
-
-            ---
-
-            ## 🔧 Installation | 安装
-
-            ### Python Package
-            ```bash
-            pip install endstone-easybackuper-*.whl
-            ```
-
-            ### Manual Installation
-            Download the appropriate executable for your platform and place it in the server plugins directory.
-
-            如需手动安装，请下载对应平台的执行文件并放置在服务器插件目录中。
+          tag_name: v${{ steps.version.outputs.version }}
+          name: "v${{ steps.version.outputs.version }}"
+          body: ${{ steps.notes.outputs.body }}
           draft: false
-          prerelease: false
+          prerelease: ${{ contains(steps.version.outputs.version, 'beta') || contains(steps.version.outputs.version, 'alpha') || contains(steps.version.outputs.version, 'rc') || contains(steps.version.outputs.version, 'dev') }}
           files: |
             artifacts/*.whl
             artifacts/*.tar.gz

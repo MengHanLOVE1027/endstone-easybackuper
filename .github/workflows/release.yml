@@ -1,0 +1,155 @@
+name: Build & Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: write
+
+jobs:
+  build-and-release:
+    name: Build & Release
+    timeout-minutes: 15
+    runs-on: ubuntu-latest
+    if: github.event_name == 'workflow_dispatch' || github.ref == 'refs/heads/main'
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Get version
+        id: version
+        shell: bash
+        run: |
+          VERSION=$(python -c "import re;c=open('src/endstone_easybackuper/easybackuper_plugin.py').read();m=re.search(r'^plugin_version\s*=\s*\"(.+?)\"',c,re.M);print(m.group(1) if m else '0.0.0')")
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+
+      - name: Check if tag exists
+        id: check
+        shell: bash
+        run: |
+          git fetch --tags --force
+          TAG="v${{ steps.version.outputs.version }}"
+          if git rev-parse "$TAG" >/dev/null 2>&1; then
+            echo "exists=true" >> "$GITHUB_OUTPUT"
+            echo "Tag $TAG already exists, skipping."
+          else
+            echo "exists=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install build tools
+        run: pip install build
+
+      - name: Generate changelog with git-cliff
+        if: steps.check.outputs.exists == 'false'
+        uses: orhun/git-cliff-action@v4
+        with:
+          args: --latest --strip header --prepend CHANGELOG.md
+        env:
+          GITHUB_REPO: ${{ github.repository }}
+
+      - name: Commit updated CHANGELOG
+        if: steps.check.outputs.exists == 'false'
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add CHANGELOG.md
+          if git diff --cached --quiet; then
+            echo "No CHANGELOG changes"
+          else
+            git commit -m "chore: update CHANGELOG for v${{ steps.version.outputs.version }}"
+            git push origin HEAD:main
+          fi
+
+      - name: Build wheel
+        if: steps.check.outputs.exists == 'false' || github.event_name == 'workflow_dispatch'
+        run: python -m build --wheel
+
+      - name: Extract release notes
+        id: changelog
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -e
+          VERSION="${{ steps.version.outputs.version }}"
+
+          # ── 1. CHANGELOG 总结 ──
+          set +o pipefail
+          SUMMARY=$(awk -v ver="$VERSION" '
+            /^## \[/ {
+              if (found) exit
+              if (index($0, "[" ver "]")) { found=1; next }
+            }
+            found { print }
+          ' CHANGELOG.md 2>/dev/null || true)
+          SUMMARY="${SUMMARY:-## YEssential v${VERSION}}"
+
+          # ── 2. 获取上一版本 tag ──
+          git fetch --tags --force
+          ALL_TAGS=$(git tag --sort=-v:refname | grep -v "v${VERSION}")
+          PREV_TAG=$(head -n1 <<< "$ALL_TAGS")
+
+          # ── 3. API 获取提交并按类型分组 ──
+          if [ -n "$PREV_TAG" ]; then
+            RESPONSE=$(gh api "repos/${{ github.repository }}/compare/${PREV_TAG}...HEAD" 2>/dev/null || echo "")
+            AUTHORS=$(jq -r '[.commits[]?.author.login//empty]|unique|map(select(.!="github-actions[bot]"))|map("@"+.)|join(" ")' <<< "$RESPONSE" 2>/dev/null || true)
+
+            DETAILS=$(jq -r '
+              [.commits[]? | select(.author.login != "github-actions[bot]")] |
+              map("- \(.commit.message|split("\n")[0]) (@\(.author.login))") |
+              join("\n")
+            ' <<< "$RESPONSE" 2>/dev/null || true)
+          else
+            DETAILS="🚀 YEssential v${VERSION} 首次发布"
+            AUTHORS=""
+          fi
+
+          # ── 4. 组装 Release Body ──
+          {
+            printf '%s\n' "$SUMMARY"
+            [ -n "$PREV_TAG" ] && printf '\n**Full Changelog**: https://github.com/%s/compare/%s...v%s\n' \
+              "${{ github.repository }}" "$PREV_TAG" "$VERSION"
+            [ -n "$DETAILS" ] && printf '\n%s\n' "$DETAILS"
+            [ -n "$AUTHORS" ] && printf '\n**Contributors**: %s\n' "$AUTHORS"
+          } > /tmp/release_body.md
+
+          printf 'BODY<<BODYEOF\n' >> "$GITHUB_OUTPUT"
+          cat /tmp/release_body.md >> "$GITHUB_OUTPUT"
+          printf '\nBODYEOF\n' >> "$GITHUB_OUTPUT"
+
+      - name: Create tag and Release
+        if: steps.check.outputs.exists == 'false'
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          TAG="v${{ steps.version.outputs.version }}"
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git tag -a "$TAG" -m "Release $TAG"
+          git push origin "$TAG"
+
+          PRERELEASE="false"
+          case "$TAG" in *beta*|*alpha*|*rc*|*dev*) PRERELEASE="true" ;; esac
+
+          gh release create "$TAG" \
+            --title "v${{ steps.version.outputs.version }}" \
+            --notes-file /tmp/release_body.md \
+            --prerelease=$PRERELEASE \
+            dist/*.whl

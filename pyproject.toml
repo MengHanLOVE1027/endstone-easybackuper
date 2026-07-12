@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "endstone-easybackuper"
-version = "0.4.4"
+dynamic = ["version"]
 authors = [
     { name = "MengHanLOVE", email = "2193438288@qq.com" },
 ]
@@ -24,6 +24,10 @@ Homepage = "https://github.com/MengHanLOVE1027/endstone-easybackuper"
 
 [project.entry-points."endstone"]
 easybackuper = "endstone_easybackuper:EasyBackuperPlugin"
+
+[tool.hatch.version]
+path = "src/endstone_easybackuper/easybackuper_plugin.py"
+pattern = 'plugin_version\s*=\s*"(?P<version>[^"]+)"'
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/endstone_easybackuper"]
