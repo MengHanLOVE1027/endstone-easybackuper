@@ -17,6 +17,7 @@ Powered by EndStone.<br>
 [![README](https://img.shields.io/badge/README-中文|Chinese-blue)](README.md) [![README_EN](https://img.shields.io/badge/README-英文|English-blue)](README_EN.md)
 
 [![Github Version](https://img.shields.io/github/v/release/MengHanLOVE1027/endstone-easybackuper)](https://github.com/MengHanLOVE1027/endstone-easybackuper/releases) [![GitHub License](https://img.shields.io/badge/License-AGPL%203.0-blue.svg)](https://opensource.org/licenses/AGPL-3.0) [![Python](https://img.shields.io/badge/Python-3.8+-green.svg)](https://www.python.org/) [![Platform](https://img.shields.io/badge/Platform-EndStone-9cf.svg)](https://endstone.io) [![Downloads](https://img.shields.io/github/downloads/MengHanLOVE1027/endstone-easybackuper/total.svg)](https://github.com/MengHanLOVE1027/endstone-easybackuper/releases)
+![](https://img.shields.io/github/v/release/MengHanLOVE1027/endstone-easybackuper?style=flat-square&logo=github&color=orange&label=Version) ![](https://img.shields.io/github/downloads/MengHanLOVE1027/endstone-easybackuper/total?style=flat-square&logo=github&color=33ccff&label=Downloads) ![](https://img.shields.io/github/languages/top/MengHanLOVE1027/endstone-easybackuper?style=flat-square&logo=python&color=yellow) ![](https://img.shields.io/github/stars/MengHanLOVE1027/endstone-easybackuper?style=flat-square&logo=github&color=yellow&label=Stars) ![](https://img.shields.io/github/last-commit/MengHanLOVE1027/endstone-easybackuper?style=flat-square&color=lightgrey) ![](https://komarev.com/ghpvc/?username=MengHanLOVE1027&repo=endstone-easybackuper&color=green&style=flat-square&label=Views)
 
 </div>
 
@@ -71,7 +72,7 @@ EasyBackuper 是一个专为 Endstone 服务器设计的备份插件，旨在简
 ### 安装步骤
 
 1. **下载插件**
-   - 从 [Release页面](https://github.com/MengHanLOVE1027/EasyBackuper/releases) 下载最新版本
+   - 从 [Release页面](https://github.com/MengHanLOVE1027/endstone-easybackuper/releases) 下载最新版本
    - 或从 [MineBBS](https://www.minebbs.com/resources/easybackuper-eb-minecraft.14896/) 获取
 
 2. **安装插件**
@@ -81,7 +82,7 @@ EasyBackuper 是一个专为 Endstone 服务器设计的备份插件，旨在简
    ```
 
 3. **安装依赖文件**
-   - 将 `7za.exe`、`restore_handler.exe` 放入 `plugins/EasyBackuper/` 目录 (restore_handler.exe 可从 [Release页面](https://github.com/MengHanLOVE1027/EasyBackuper/releases) 下载 或者 手动编译)
+   - 将 `7za.exe`、`restore_handler.exe` 放入 `plugins/EasyBackuper/` 目录 (restore_handler.exe 可从 [Release页面](https://github.com/MengHanLOVE1027/endstone-easybackuper/releases) 下载 或者 手动编译)
 
 4. **启动服务器**
    - 重启服务器或使用 `/reload` 命令
@@ -308,7 +309,7 @@ EasyBackuper 是一个专为 Endstone 服务器设计的备份插件，旨在简
 | 日志文件 | 位置                                                  | 用途                       |
 | -------- | ----------------------------------------------------- | -------------------------- |
 | 主日志   | `logs/EasyBackuper/easybackuper_YYYYMMDD.log`         | 记录备份、清理等常规操作   |
-| 恢复日志 | `logs/EasyBackuper/easybackiper_restore_YYYYMMDD.log` | 记录备份恢复过程的详细操作 |
+| 恢复日志 | `logs/EasyBackuper/easybackuper_restore_YYYYMMDD.log` | 记录备份恢复过程的详细操作 |
 
 ---
 
