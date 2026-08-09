@@ -2,8 +2,8 @@ name: Build & Release
 
 on:
   push:
-    tags:
-      - 'v*'
+    branches:
+      - main
   workflow_dispatch:
 
 concurrency:
@@ -52,57 +52,93 @@ jobs:
           echo "version=$VERSION" >> "$GITHUB_OUTPUT"
           echo "Source version: $VERSION"
 
-          # 如果是 tag 触发的，校验版本号一致
-          if [[ "${{ github.ref }}" == refs/tags/* ]]; then
-            TAG_VERSION="${{ github.ref_name }}"
-            TAG_VERSION="${TAG_VERSION#v}"
-            if [ "$TAG_VERSION" != "$VERSION" ]; then
-              echo "::error::Tag version ($TAG_VERSION) does not match source version ($VERSION)"
-              exit 1
-            fi
-            echo "Version validated: tag=$TAG_VERSION, source=$VERSION"
+          # 判断是否为测试版，输出到 step outputs
+          case "$VERSION" in
+            *beta*|*alpha*|*rc*|*dev*) echo "prerelease=true" >> "$GITHUB_OUTPUT" ;;
+            *)                         echo "prerelease=false" >> "$GITHUB_OUTPUT" ;;
+          esac
+
+      # ────────────────────────────────────
+      # 3. 检查是否需要发布
+      # ────────────────────────────────────
+      - name: Check if version already released
+        id: check
+        shell: bash
+        run: |
+          VERSION="${{ steps.version.outputs.version }}"
+          TAG="v${VERSION}"
+
+          git fetch --tags --force
+          if git rev-parse "$TAG" >/dev/null 2>&1; then
+            echo "exists=true" >> "$GITHUB_OUTPUT"
+            echo "Tag $TAG already exists, skipping."
+          else
+            echo "exists=false" >> "$GITHUB_OUTPUT"
+            echo "Tag $TAG does not exist, will create it."
           fi
 
       # ────────────────────────────────────
-      # 3. 构建 Python wheel
+      # 4. 创建 Tag（首次发布此版本时）
+      # ────────────────────────────────────
+      - name: Create and push tag
+        if: steps.check.outputs.exists == 'false'
+        shell: bash
+        run: |
+          VERSION="${{ steps.version.outputs.version }}"
+          TAG="v${VERSION}"
+
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git tag -a "$TAG" -m "Release $TAG"
+          git push origin "$TAG"
+          echo "Created and pushed tag: $TAG"
+
+      # ────────────────────────────────────
+      # 5. 构建 Python wheel
       # ────────────────────────────────────
       - name: Build Python wheel
+        if: steps.check.outputs.exists == 'false' || github.event_name == 'workflow_dispatch'
         run: |
           python -m build --wheel
           echo "----- dist/ -----"
           ls -la dist/
 
       # ────────────────────────────────────
-      # 4. 构建 Go 二进制文件
+      # 6. 构建 Go 二进制文件
       # ────────────────────────────────────
       - name: Build Go — restore_handler (Windows)
+        if: steps.check.outputs.exists == 'false' || github.event_name == 'workflow_dispatch'
         working-directory: go/restore_handler
         run: |
           GOOS=windows GOARCH=amd64 go build -ldflags="-s -w" -o restore_handler.exe main.go
           echo "Built: restore_handler.exe"
 
       - name: Build Go — restore_handler_en (Windows)
+        if: steps.check.outputs.exists == 'false' || github.event_name == 'workflow_dispatch'
         working-directory: go/restore_handler_en
         run: |
           GOOS=windows GOARCH=amd64 go build -ldflags="-s -w" -o restore_handler_en.exe main_en.go
           echo "Built: restore_handler_en.exe"
 
       - name: Build Go — restore_handler (Linux)
+        if: steps.check.outputs.exists == 'false' || github.event_name == 'workflow_dispatch'
         working-directory: go/restore_handler
         run: |
           GOOS=linux GOARCH=amd64 go build -ldflags="-s -w" -o restore_handler_linux main.go
           echo "Built: restore_handler_linux"
 
       - name: Build Go — restore_handler_en (Linux)
+        if: steps.check.outputs.exists == 'false' || github.event_name == 'workflow_dispatch'
         working-directory: go/restore_handler_en
         run: |
           GOOS=linux GOARCH=amd64 go build -ldflags="-s -w" -o restore_handler_en_linux main_en.go
           echo "Built: restore_handler_en_linux"
 
       # ────────────────────────────────────
-      # 5. 收集产物
+      # 7. 收集产物
       # ────────────────────────────────────
       - name: Collect artifacts
+        if: steps.check.outputs.exists == 'false' || github.event_name == 'workflow_dispatch'
         shell: bash
         run: |
           mkdir -p artifacts
@@ -110,7 +146,7 @@ jobs:
           cp dist/*.whl   artifacts/ 2>/dev/null || true
           cp dist/*.tar.gz artifacts/ 2>/dev/null || true
 
-          cp go/restore_handler/restore_handler.exe         artifacts/ 2>/dev/null || true
+          cp go/restore_handler/restore_handler.exe           artifacts/ 2>/dev/null || true
           cp go/restore_handler_en/restore_handler_en.exe     artifacts/ 2>/dev/null || true
           cp go/restore_handler/restore_handler_linux         artifacts/ 2>/dev/null || true
           cp go/restore_handler_en/restore_handler_en_linux   artifacts/ 2>/dev/null || true
@@ -119,9 +155,10 @@ jobs:
           ls -la artifacts/
 
       # ────────────────────────────────────
-      # 6. 生成 Release 说明
+      # 8. 生成 Release 说明
       # ────────────────────────────────────
       - name: Generate release notes
+        if: steps.check.outputs.exists == 'false' || github.event_name == 'workflow_dispatch'
         id: changelog
         shell: bash
         env:
@@ -129,6 +166,7 @@ jobs:
         run: |
           set -e
           VERSION="${{ steps.version.outputs.version }}"
+          TAG="v${VERSION}"
 
           case "$VERSION" in
             *beta*|*alpha*|*rc*|*dev*) TYPE="🧪 测试版" ;;
@@ -137,7 +175,7 @@ jobs:
 
           # 获取上一版本 tag
           git fetch --tags --force
-          PREV_TAG=$(git tag --sort=-v:refname | grep -v "v${VERSION}" | head -n1)
+          PREV_TAG=$(git tag --sort=-v:refname | grep -v "${TAG}" | head -n1)
 
           if [ -n "$PREV_TAG" ]; then
             DETAILS=$(gh api "repos/${{ github.repository }}/compare/${PREV_TAG}...HEAD" \
@@ -148,7 +186,7 @@ jobs:
               --jq '[.commits[]?.author.login // empty] | unique | map(select(. != "github-actions[bot]")) | map("@" + .) | join(" ")' \
               2>/dev/null || echo "")
 
-            CHANGELOG_LINK="https://github.com/${{ github.repository }}/compare/${PREV_TAG}...v${VERSION}"
+            CHANGELOG_LINK="https://github.com/${{ github.repository }}/compare/${PREV_TAG}...${TAG}"
           else
             DETAILS="- 🎉 EasyBackuper v${VERSION} 首次发布"
             AUTHORS=""
@@ -202,16 +240,17 @@ jobs:
           echo "Release notes generated"
 
       # ────────────────────────────────────
-      # 7. 发布 Release
+      # 9. 发布 Release
       # ────────────────────────────────────
       - name: Create GitHub Release
+        if: steps.check.outputs.exists == 'false' || github.event_name == 'workflow_dispatch'
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: ${{ github.ref_name }}
+          tag_name: v${{ steps.version.outputs.version }}
           name: "v${{ steps.version.outputs.version }}"
           body: ${{ steps.changelog.outputs.body }}
           draft: false
-          prerelease: ${{ contains(github.ref_name, 'beta') || contains(github.ref_name, 'alpha') || contains(github.ref_name, 'rc') || contains(github.ref_name, 'dev') }}
+          prerelease: ${{ steps.version.outputs.prerelease == 'true' }}
           files: |
             artifacts/*.whl
             artifacts/*.tar.gz
