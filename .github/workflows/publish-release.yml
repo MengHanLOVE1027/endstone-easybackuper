@@ -144,7 +144,6 @@ jobs:
           mkdir -p artifacts
 
           cp dist/*.whl   artifacts/ 2>/dev/null || true
-          cp dist/*.tar.gz artifacts/ 2>/dev/null || true
 
           cp go/restore_handler/restore_handler.exe           artifacts/ 2>/dev/null || true
           cp go/restore_handler_en/restore_handler_en.exe     artifacts/ 2>/dev/null || true
@@ -204,7 +203,6 @@ jobs:
           | 平台 | 文件 | 语言 |
           |------|------|------|
           | 🐍 Python | \`*.whl\` | — |
-          | 🐍 Python | \`*.tar.gz\` | — |
           | 🪟 Windows | \`restore_handler.exe\` | 中文 |
           | 🪟 Windows | \`restore_handler_en.exe\` | English |
           | 🐧 Linux | \`restore_handler_linux\` | 中文 |
@@ -253,7 +251,6 @@ jobs:
           prerelease: ${{ steps.version.outputs.prerelease == 'true' }}
           files: |
             artifacts/*.whl
-            artifacts/*.tar.gz
             artifacts/*.exe
             artifacts/restore_handler_linux
             artifacts/restore_handler_en_linux
