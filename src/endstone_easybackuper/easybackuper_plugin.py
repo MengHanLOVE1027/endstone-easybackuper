@@ -19,7 +19,7 @@ from .bstats import BStats, SimplePie
 plugin_name = "EasyBackuper"
 plugin_name_smallest = "easybackuper"
 plugin_description = "一个基于 EndStone 的轻量级、高性能、功能全面的Minecraft服务器热备份插件 / A lightweight, high-performance, and feature-rich hot backup plugin for Minecraft servers based on EndStone."
-plugin_version = "0.4.4"
+plugin_version = "0.4.5-beta.1"
 plugin_author = ["梦涵LOVE"]
 plugin_website = "https://www.minebbs.com/resources/easybackuper-eb-minecraft.14896/"
 plugin_github_link = "https://github.com/MengHanLOVE1027/endstone-easybackuper"
@@ -780,11 +780,13 @@ class EasyBackuperPlugin(Plugin):
         # 记录备份开始时间
         backup_start_time = time.time()
 
-        try:
-            # 备份完成后重置备份状态
-            def reset_backup_status():
-                self.is_backing_up = False
+        # 备份完成后重置备份状态
+        def reset_backup_status():
+            self.is_backing_up = False
 
+        save_query = None
+
+        try:
             # 压缩相关功能
             compression_config = pluginConfig.get("Compression", {})
             compression_method = compression_config.get("method", "zip")
@@ -1188,7 +1190,8 @@ class EasyBackuperPlugin(Plugin):
             plugin_print(self.translate("easybackuper.backup.error", str(e)), level="ERROR")
             reset_backup_status()
 
-        server.scheduler.run_task(self, save_query, delay=20, period=0)
+        if save_query is not None:
+            server.scheduler.run_task(self, save_query, delay=20, period=0)
         return None
 
     # NOTE: 自动备份功能

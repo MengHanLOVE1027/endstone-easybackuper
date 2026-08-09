@@ -1,15 +1,22 @@
-name: Publish Release
+name: Build & Release
 
 on:
   push:
     tags:
       - 'v*'
+  workflow_dispatch:
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: true
 
 permissions:
   contents: write
 
 jobs:
-  build-and-publish:
+  build-and-release:
+    name: Build & Release
+    timeout-minutes: 15
     runs-on: ubuntu-latest
 
     steps:
@@ -21,17 +28,15 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Set up Python
+      - name: Setup Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.x'
+          python-version: '3.12'
 
-      - name: Install Python build tools
-        run: |
-          python -m pip install --upgrade pip
-          pip install build hatchling
+      - name: Install build tools
+        run: pip install build
 
-      - name: Set up Go
+      - name: Setup Go
         uses: actions/setup-go@v5
         with:
           go-version: '1.21'
@@ -39,24 +44,37 @@ jobs:
       # ────────────────────────────────────
       # 2. 提取版本号
       # ────────────────────────────────────
-      - name: Get version from tag
+      - name: Get version from source
         id: version
         shell: bash
         run: |
-          TAG="${{ github.ref_name }}"
-          VERSION="${TAG#v}"
+          VERSION=$(python -c "import re;c=open('src/endstone_easybackuper/easybackuper_plugin.py').read();m=re.search(r'^plugin_version\s*=\s*\"(.+?)\"',c,re.M);print(m.group(1) if m else '0.0.0')")
           echo "version=$VERSION" >> "$GITHUB_OUTPUT"
-          echo "Tag: $TAG → Version: $VERSION"
+          echo "Source version: $VERSION"
+
+          # 如果是 tag 触发的，校验版本号一致
+          if [[ "${{ github.ref }}" == refs/tags/* ]]; then
+            TAG_VERSION="${{ github.ref_name }}"
+            TAG_VERSION="${TAG_VERSION#v}"
+            if [ "$TAG_VERSION" != "$VERSION" ]; then
+              echo "::error::Tag version ($TAG_VERSION) does not match source version ($VERSION)"
+              exit 1
+            fi
+            echo "Version validated: tag=$TAG_VERSION, source=$VERSION"
+          fi
 
       # ────────────────────────────────────
-      # 3. 构建
+      # 3. 构建 Python wheel
       # ────────────────────────────────────
       - name: Build Python wheel
         run: |
-          python -m build
+          python -m build --wheel
           echo "----- dist/ -----"
           ls -la dist/
 
+      # ────────────────────────────────────
+      # 4. 构建 Go 二进制文件
+      # ────────────────────────────────────
       - name: Build Go — restore_handler (Windows)
         working-directory: go/restore_handler
         run: |
@@ -82,7 +100,7 @@ jobs:
           echo "Built: restore_handler_en_linux"
 
       # ────────────────────────────────────
-      # 4. 收集产物
+      # 5. 收集产物
       # ────────────────────────────────────
       - name: Collect artifacts
         shell: bash
@@ -92,19 +110,19 @@ jobs:
           cp dist/*.whl   artifacts/ 2>/dev/null || true
           cp dist/*.tar.gz artifacts/ 2>/dev/null || true
 
-          cp go/restore_handler/restore_handler.exe       artifacts/ 2>/dev/null || true
-          cp go/restore_handler_en/restore_handler_en.exe   artifacts/ 2>/dev/null || true
-          cp go/restore_handler/restore_handler_linux       artifacts/ 2>/dev/null || true
-          cp go/restore_handler_en/restore_handler_en_linux artifacts/ 2>/dev/null || true
+          cp go/restore_handler/restore_handler.exe         artifacts/ 2>/dev/null || true
+          cp go/restore_handler_en/restore_handler_en.exe     artifacts/ 2>/dev/null || true
+          cp go/restore_handler/restore_handler_linux         artifacts/ 2>/dev/null || true
+          cp go/restore_handler_en/restore_handler_en_linux   artifacts/ 2>/dev/null || true
 
           echo "----- artifacts/ -----"
           ls -la artifacts/
 
       # ────────────────────────────────────
-      # 5. 生成 Release 说明
+      # 6. 生成 Release 说明
       # ────────────────────────────────────
       - name: Generate release notes
-        id: notes
+        id: changelog
         shell: bash
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -117,6 +135,8 @@ jobs:
             *)                         TYPE="🚀 正式版" ;;
           esac
 
+          # 获取上一版本 tag
+          git fetch --tags --force
           PREV_TAG=$(git tag --sort=-v:refname | grep -v "v${VERSION}" | head -n1)
 
           if [ -n "$PREV_TAG" ]; then
@@ -182,14 +202,14 @@ jobs:
           echo "Release notes generated"
 
       # ────────────────────────────────────
-      # 6. 发布 Release
+      # 7. 发布 Release
       # ────────────────────────────────────
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ github.ref_name }}
-          name: "${{ github.ref_name }}"
-          body: ${{ steps.notes.outputs.body }}
+          name: "v${{ steps.version.outputs.version }}"
+          body: ${{ steps.changelog.outputs.body }}
           draft: false
           prerelease: ${{ contains(github.ref_name, 'beta') || contains(github.ref_name, 'alpha') || contains(github.ref_name, 'rc') || contains(github.ref_name, 'dev') }}
           files: |
