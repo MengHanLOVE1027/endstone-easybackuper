@@ -362,6 +362,14 @@ EasyBackuper 是一个专为 Endstone 服务器设计的备份插件，旨在简
 
 **⭐ 如果这个项目对你有帮助，请给我们一个 Star！**
 
-[![Star History Chart](https://api.star-history.com/svg?repos=MengHanLOVE1027/endstone-easybackuper&type=Date)](https://star-history.com/#MengHanLOVE1027/endstone-easybackuper&Date)
+## Star History
+
+<a href="https://www.star-history.com/?type=date&repos=MengHanLOVE1027%2Fendstone-easybackuper">
+ <picture>
+   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/chart?repos=MengHanLOVE1027/endstone-easybackuper&type=date&theme=dark&legend=top-left&sealed_token=F4pkhPVZ1Ct3NJ5Ca_9-jVEkEdAqjqBX9SWFWXI1ozJd6LRWCMjjsvC60aInG5SJvWwmK7d_wb7OvFnaLMguw4TwmmINxHFFu0t8Gt0mTuo5h2ruYapDoAYTqOm0bFcFob5DxHhTs23DCEHtyg6h89wkr3xH8xHnkyAWZbD2S5Ulytn7je8jxeoM_ui7" />
+   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/chart?repos=MengHanLOVE1027/endstone-easybackuper&type=date&legend=top-left&sealed_token=F4pkhPVZ1Ct3NJ5Ca_9-jVEkEdAqjqBX9SWFWXI1ozJd6LRWCMjjsvC60aInG5SJvWwmK7d_wb7OvFnaLMguw4TwmmINxHFFu0t8Gt0mTuo5h2ruYapDoAYTqOm0bFcFob5DxHhTs23DCEHtyg6h89wkr3xH8xHnkyAWZbD2S5Ulytn7je8jxeoM_ui7" />
+   <img alt="Star History Chart" src="https://api.star-history.com/chart?repos=MengHanLOVE1027/endstone-easybackuper&type=date&legend=top-left&sealed_token=F4pkhPVZ1Ct3NJ5Ca_9-jVEkEdAqjqBX9SWFWXI1ozJd6LRWCMjjsvC60aInG5SJvWwmK7d_wb7OvFnaLMguw4TwmmINxHFFu0t8Gt0mTuo5h2ruYapDoAYTqOm0bFcFob5DxHhTs23DCEHtyg6h89wkr3xH8xHnkyAWZbD2S5Ulytn7je8jxeoM_ui7" />
+ </picture>
+</a>
 
 </div>
