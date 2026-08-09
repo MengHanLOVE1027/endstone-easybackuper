@@ -1,9 +1,9 @@
 {
-    "latest_version": "0.4.5-beta.1",
+    "latest_version": "0.4.5-beta.2",
     "versions": {
-        "0.4.5-beta.1": {
-            "download_url": "https://github.com/MengHanLOVE1027/endstone-easybackuper/releases/download/v0.4.5-beta.1/endstone_easybackuper-0.4.5b1-py3-none-any.whl",
-            "update_content": "v0.4.5-beta.1 测试版：修复备份异常处理逻辑，优化 CI/CD 工作流",
+        "0.4.5-beta.2": {
+            "download_url": "https://github.com/MengHanLOVE1027/endstone-easybackuper/releases/download/v0.4.5-beta.2/endstone_easybackuper-0.4.5-beta.2-py3-none-any.whl",
+            "update_content": "v0.4.5-beta.2 测试版：修复备份异常处理逻辑，优化 CI/CD 工作流",
             "author": "梦涵LOVE",
             "update_time": "2026-08-09 19:00:00"
         },
