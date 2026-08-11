@@ -1,5 +1,5 @@
 # 注册命令
-from endstone._internal.endstone_python import CommandSender, Command
+from endstone.command import CommandSender, Command
 
 commands = {
     # 备份主命令

@@ -1,131 +1,183 @@
-# Changelog
+# 📋 Changelog
 
-All notable changes to this project will be documented in this file.
+本文件遵循 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.0.0/) 格式。
 
-# [0.4.4.5](https://github.com/MengHanLOVE1027/endstone-easybackuper/compare/v0.4.4.4...v0.4.4.5) (2026-03-29)
-### Bug Fixes
+---
 
-* fix1 ([5403ba8](https://github.com/MengHanLOVE1027/endstone-easybackuper/commit/5403ba8b735fea7fe69a6da727dda92369c4ea9c)) [@梦涵LOVE](https://github.com/梦涵LOVE)
+## [0.4.5] - 2026-08-12
 
+### 🐛 修复
+- 修复备份异常处理逻辑
+- 修复 CI/CD 工作流自动 PR 逻辑
+- 更新 README 和英文文档中的链接和描述，修正拼写错误
 
+### ✨ 新增
+- 🎉 正式版 v0.4.5 发布
+- Dev → Main 自动 PR 工作流
+- Build & Release 自动发布工作流
+- README 徽章和 Star History 图表
 
-# [0.4.4.4](https://github.com/MengHanLOVE1027/endstone-easybackuper/compare/v0.4.4.3...v0.4.4.4) (2026-03-29)
-### Bug Fixes
+### 🔧 改进
+- CHANGELOG 采用 Keep a Changelog 格式
+- 优化 CI/CD 工作流，添加 CHANGELOG 分类提取
 
-* fix again ([f628d3f](https://github.com/MengHanLOVE1027/endstone-easybackuper/commit/f628d3fe9707630e6a9094ad98df3d8d05be5bdd)) [@梦涵LOVE](https://github.com/梦涵LOVE)
+---
 
+## [0.4.5-beta.2] - 2026-08-09
 
+### 🐛 修复
+- 修复备份异常处理逻辑
+- 修复 CI/CD 工作流自动 PR 逻辑
+- 更新 README 和英文文档中的链接和描述，修正拼写错误
 
-# [0.4.4.3](https://github.com/MengHanLOVE1027/endstone-easybackuper/compare/v0.4.4.2...v0.4.4.3) (2026-03-29)
-### Testing
+### ✨ 新增
+- 优化 CI/CD 工作流，添加自动 PR 和发布功能
+- 更新 README 徽章和 Star History 图表
 
-* 测试一下阿巴阿巴 ([17e7ecc](https://github.com/MengHanLOVE1027/endstone-easybackuper/commit/17e7ecc5e6ffc90750088bf690ac345351f029bd)) [@梦涵LOVE](https://github.com/梦涵LOVE)
+### 🔧 改进
+- 更新插件版本至 0.4.5-beta.2
 
+---
 
+## [0.4.5-beta.1] - 2026-08-08
 
-# [0.4.4.2](https://github.com/MengHanLOVE1027/endstone-easybackuper/compare/v0.4.4.1...v0.4.4.2) (2026-03-29)
-### Bug Fixes
+### 🐛 修复
+- 修正版本获取路径和 PR 标题
+- 更新插件版本获取逻辑，修正路径和动态版本设置
+- 优化发布说明生成逻辑，简化变量替换和格式化
 
-* 简化构建流程 ([ed3839e](https://github.com/MengHanLOVE1027/endstone-easybackuper/commit/ed3839e52c6330594747abe59ae1cb4434b55e3e)) [@梦涵LOVE](https://github.com/梦涵LOVE)
+### ✨ 新增
+- 添加发布工作流以自动化版本构建和发布
 
+### 🔧 改进
+- 删除旧的发布工作流，添加新的 dev → main PR 工作流
+- 更新插件版本至 0.4.5-beta.1
 
+---
 
-# [0.4.4.1](https://github.com/MengHanLOVE1027/endstone-easybackuper/compare/v0.4.4...v0.4.4.1) (2026-03-29)
-### Bug Fixes
+## [0.4.4.5] - 2026-03-29
 
-* 修正下载链接中的拼写错误，并添加tooth.json文件以支持插件信息 ([16cb0d8](https://github.com/MengHanLOVE1027/endstone-easybackuper/commit/16cb0d88f3c69b92cbc227707fca208844ad6e5b)) [@梦涵LOVE](https://github.com/梦涵LOVE)
+### 🐛 修复
+- 修复构建流程中的问题
 
+---
 
-### Testing
+## [0.4.4.4] - 2026-03-29
 
-* 自动化Release ([e708495](https://github.com/MengHanLOVE1027/endstone-easybackuper/commit/e708495e4e2c4f8d6d466b3f7ee9003214f2f266)) [@梦涵LOVE](https://github.com/梦涵LOVE)
+### 🐛 修复
+- 修复构建流程中的问题
 
+---
 
-### Miscellaneous Tasks
+## [0.4.4.3] - 2026-03-29
 
-* 删除tooth.json文件，移除插件信息 ([397577f](https://github.com/MengHanLOVE1027/endstone-easybackuper/commit/397577f632db1c6c9f223db348927f472e50dff7)) [@梦涵LOVE](https://github.com/梦涵LOVE)
-* 删除CHANGELOG.md文件，移除版本更新记录 ([f870c86](https://github.com/MengHanLOVE1027/endstone-easybackuper/commit/f870c863194d5099bdab507f5aa76b2eeb11d2e0)) [@梦涵LOVE](https://github.com/梦涵LOVE)
+### 🧪 测试
+- 测试自动化工作流
 
+---
 
+## [0.4.4.2] - 2026-03-29
 
-# [0.4.4](https://github.com/MengHanLOVE1027/endstone-easybackuper/compare/v0.4.3.4...v0.4.4) (2026-03-01)
-### Features
+### 🔧 改进
+- 简化构建流程
 
-* 更新版本号至 v0.4.4，并优化遥测日志输出，适配EasyCheckUpdate ([d7b9ab7](https://github.com/MengHanLOVE1027/endstone-easybackuper/commit/d7b9ab725af8398674860904aa086145b69fffdb)) [@梦涵LOVE](https://github.com/梦涵LOVE)
+---
 
+## [0.4.4.1] - 2026-03-29
 
+### 🐛 修复
+- 修正下载链接中的拼写错误，添加 tooth.json 文件以支持插件信息
 
-# [0.4.3.4](https://github.com/MengHanLOVE1027/endstone-easybackuper/compare/v0.4.3.3...v0.4.3.4) (2026-02-28)
-### Features
+### 🧪 测试
+- 测试自动化 Release 构建与发布
 
-* 更新至 v0.4.3.4，优化日志系统和错误处理，添加bStats遥测模块，新增构建脚本 ([06cec61](https://github.com/MengHanLOVE1027/endstone-easybackuper/commit/06cec61c0122399942494b776da91f214cab3bf5)) [@梦涵LOVE](https://github.com/梦涵LOVE)
+### 🗑️ 移除
+- 删除 tooth.json 文件
+- 删除旧的 CHANGELOG.md
 
+---
 
+## [0.4.4] - 2026-03-01
 
-# [0.4.3.3](https://github.com/MengHanLOVE1027/endstone-easybackuper/compare/v0.4.3.2...v0.4.3.3) (2026-02-03)
-### Bug Fixes
+### ✨ 新增
+- 更新版本号至 v0.4.4
+- 优化遥测日志输出，适配 EasyCheckUpdate
 
-* 改一下项目描述 ([6197190](https://github.com/MengHanLOVE1027/endstone-easybackuper/commit/619719001859a1fd1a4259c6078fa90489761c9f)) [@梦涵LOVE](https://github.com/梦涵LOVE)
+---
 
+## [0.4.3.4] - 2026-02-28
 
-### Features
+### ✨ 新增
+- 优化日志系统和错误处理
+- 添加 bStats 遥测模块
+- 新增构建脚本
 
-* v0.4.3.3 ([2aecfe3](https://github.com/MengHanLOVE1027/endstone-easybackuper/commit/2aecfe341413c4c0cfff859a5c87995ddf2d96b1)) [@梦涵LOVE](https://github.com/梦涵LOVE)
+---
 
+## [0.4.3.3] - 2026-02-03
 
+### 🐛 修复
+- 修正项目描述
 
-# [0.4.3.2](https://github.com/MengHanLOVE1027/endstone-easybackuper/compare/v0.4.3...v0.4.3.2) (2026-02-03)
-### Features
+### ✨ 新增
+- v0.4.3.3 版本更新
 
-* v0.4.3.1 重新上传pypi ([f33fd9a](https://github.com/MengHanLOVE1027/endstone-easybackuper/commit/f33fd9a2e8eea8235c643208e2f27c429de9de6e)) [@梦涵LOVE](https://github.com/梦涵LOVE)
-* v0.4.3.2 修正相关链接 ([523365a](https://github.com/MengHanLOVE1027/endstone-easybackuper/commit/523365ab4b701e5222a98573d23be3e9e5ae3bb9)) [@梦涵LOVE](https://github.com/梦涵LOVE)
+---
 
+## [0.4.3.2] - 2026-02-03
 
+### ✨ 新增
+- 重新上传 PyPI
+- 修正相关链接
 
-# [0.4.3](https://github.com/MengHanLOVE1027/endstone-easybackuper/compare/v0.4.2...v0.4.3) (2026-02-03)
-### Bug Fixes
+---
 
-* 更新 MineBBS 讨论帖链接 ([44bb0d9](https://github.com/MengHanLOVE1027/endstone-easybackuper/commit/44bb0d927cffcac4f0e57d26e821130b3eb4fc79)) [@梦涵LOVE](https://github.com/梦涵LOVE)
+## [0.4.3] - 2026-02-03
 
+### 🐛 修复
+- 更新 MineBBS 讨论帖链接
 
-### Features
+### ✨ 新增
+- 优化日志输出信息，修复小 bug
+- 更新 README 配置文件说明，添加压缩格式支持和通知设置
+- 调整自动清理和定时任务状态
+- 添加 CHANGELOG.md 文件
 
-* v0.4.3 优化日志输出信息，修复一些小bug ([ee720a2](https://github.com/MengHanLOVE1027/endstone-easybackuper/commit/ee720a2aaba7bdb054f74594a84f3dede4ff6089)) [@梦涵LOVE](https://github.com/梦涵LOVE)
-* README 更新配置文件，添加压缩格式支持和通知设置，调整自动清理和定时任务状态 ([b75a253](https://github.com/MengHanLOVE1027/endstone-easybackuper/commit/b75a253c656c1ff4db60b339c685e57ff284eca6)) [@梦涵LOVE](https://github.com/梦涵LOVE)
-* 添加 CHANGELOG.md 文件，记录项目重要变更和版本更新信息 ([a547256](https://github.com/MengHanLOVE1027/endstone-easybackuper/commit/a5472561f769b0b0d98d02c474d0c41db394fcdd)) [@梦涵LOVE](https://github.com/梦涵LOVE)
+---
 
+## [0.4.2] - 2026-02-02
 
+### 🐛 修复
+- 修正文件复制目标路径以确保正确恢复世界目录
+- 更新 Star 历史图表链接以指向正确的仓库
 
-# [0.4.2](https://github.com/MengHanLOVE1027/endstone-easybackuper/compare/v0.4.1...v0.4.2) (2026-02-02)
-### Bug Fixes
+### ✨ 新增
+- 🎉 为 EasyBackuper 添加回档功能
+- 重构回档程序，使用 Go 语言编写
+- 添加更多压缩配置，支持 7z、zip、tar
+- 对 Windows 和 Linux 进行比较深入的适配
+- 添加英文 README 文件
 
-* 修正文件复制目标路径以确保正确恢复世界目录 ([83fd7ff](https://github.com/MengHanLOVE1027/endstone-easybackuper/commit/83fd7ff0cea923aa002ac075bcb29765539f0127)) [@梦涵LOVE](https://github.com/梦涵LOVE)
-* 更新Star历史图表链接以指向正确的仓库 ([5b5fee7](https://github.com/MengHanLOVE1027/endstone-easybackuper/commit/5b5fee7a6fd22a7cbcb72d15601670aa509c954f)) [@梦涵LOVE](https://github.com/梦涵LOVE)
+### 🔧 改进
+- 更新版本至 0.4.2
+- 在英文和中文 README 中添加 GitHub 版本、许可证、Python 版本、平台和下载量徽章
+- 更新许可证信息并重建 setup.py 以支持包管理
 
+---
 
-### Features
+## [0.4.1] - 2026-01-25
 
-* 为 EasyBackuper 添加回档功能 ([ab64512](https://github.com/MengHanLOVE1027/endstone-easybackuper/commit/ab64512c6a222ee4566f506d7a9da8f8e96c5a2a)) [@梦涵LOVE](https://github.com/梦涵LOVE)
-* 重构回档程序，只用golang语言编写，添加更多压缩配置，支持7z，zip，tar ([8337216](https://github.com/MengHanLOVE1027/endstone-easybackuper/commit/83372166a25c7c67858dd0cd12753d027c22ead4)) [@梦涵LOVE](https://github.com/梦涵LOVE)
-* 对Windows和Linux进行比较深入的适配 ([6eadfc4](https://github.com/MengHanLOVE1027/endstone-easybackuper/commit/6eadfc4f43925019e43d95a164320efd201ca1f8)) [@梦涵LOVE](https://github.com/梦涵LOVE)
-* 更新版本至0.4.2，添加英文README文件，移除setup.py ([414a00f](https://github.com/MengHanLOVE1027/endstone-easybackuper/commit/414a00fba4b13110f3af31ac36c64a5dc789522d)) [@梦涵LOVE](https://github.com/梦涵LOVE)
-* 在英文和中文README中添加GitHub版本、许可证、Python版本、平台和下载量徽章 ([2b98feb](https://github.com/MengHanLOVE1027/endstone-easybackuper/commit/2b98feb6034138fd19ead60c74fef561dd1a1f4a)) [@梦涵LOVE](https://github.com/梦涵LOVE)
-* 更新许可证信息并重建setup.py文件以支持包管理 ([b93baaf](https://github.com/MengHanLOVE1027/endstone-easybackuper/commit/b93baaf01b9e9f0dcac71e850955a784a1bafa1c)) [@梦涵LOVE](https://github.com/梦涵LOVE)
+### ✨ 新增
+- 添加 i18n 国际化支持
+- 添加备份大小自动单位显示
 
+---
 
+## [0.4.0-beta] - 2026-01-24
 
-# [0.4.1](https://github.com/MengHanLOVE1027/endstone-easybackuper/compare/v0.4.0-beta...v0.4.1) (2026-01-25)
-### Features
+### ✨ 新增
+- 🎉 首个测试版发布：增强备份系统功能与可靠性
 
-* v0.4.1 添加i18n支持和备份大小自动单位显示 ([2474d8b](https://github.com/MengHanLOVE1027/endstone-easybackuper/commit/2474d8b264ce7e4aca19c5b8147655b8cda56c46)) [@梦涵LOVE](https://github.com/梦涵LOVE)
+---
 
-
-
-# [0.4.0-beta] (2026-01-24)
-### Features
-
-* v0.4.0-beta 增强备份系统功能与可靠性 ([64bb707](https://github.com/MengHanLOVE1027/endstone-easybackuper/commit/64bb7073b7a2a546359c680ea1b49ae7e11afa92)) [@梦涵LOVE](https://github.com/梦涵LOVE)
-
-
-
-<!-- Generated by git-cliff. -->
+<!-- Generated with ❤️ by MengHanLOVE -->
