@@ -21,6 +21,11 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
       - name: Check if PR already exists
         id: check
         shell: bash
@@ -54,7 +59,8 @@ jobs:
           # 获取 dev 相对于 main 的提交
           git fetch origin main
           COMMITS=$(gh api "repos/${{ github.repository }}/compare/main...dev" \
-            --jq '[.commits[]? | "- \(.commit.message | split("\n")[0]) (@\(.author.login // "unknown"))"] | join("\n")' 2>/dev/null)
+            --jq '[.commits[]? | select(.author.login != "github-actions[bot]")] | map("- \(.commit.message | split("\n")[0]) (@\(.author.login))") | join("\n")' \
+            2>/dev/null || echo "")
           COMMITS="${COMMITS:-无新提交}"
 
           # 提取贡献者
