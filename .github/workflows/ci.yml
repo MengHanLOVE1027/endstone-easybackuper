@@ -1,0 +1,49 @@
+name: CI
+
+on:
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    name: Lint & Build Check
+    timeout-minutes: 5
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install build tools
+        run: pip install build
+
+      - name: Check Python syntax
+        run: python -m compileall src/
+
+      - name: Build wheel
+        run: python -m build --wheel
+
+      - name: Verify wheel exists
+        shell: bash
+        run: |
+          if ls dist/*.whl 1>/dev/null 2>&1; then
+            echo "✅ Wheel built successfully:"
+            ls -la dist/
+          else
+            echo "❌ No wheel file found!"
+            exit 1
+          fi
