@@ -4,6 +4,25 @@
 
 ---
 
+## [0.4.5] - 2026-08-12
+
+### 🐛 修复
+- 修复备份异常处理逻辑
+- 修复 CI/CD 工作流自动 PR 逻辑
+- 更新 README 和英文文档中的链接和描述，修正拼写错误
+
+### ✨ 新增
+- 🎉 正式版 v0.4.5 发布
+- Dev → Main 自动 PR 工作流
+- Build & Release 自动发布工作流
+- README 徽章和 Star History 图表
+
+### 🔧 改进
+- CHANGELOG 采用 Keep a Changelog 格式
+- 优化 CI/CD 工作流，添加 CHANGELOG 分类提取
+
+---
+
 ## [0.4.5-beta.2] - 2026-08-09
 
 ### 🐛 修复
