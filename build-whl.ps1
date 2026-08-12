@@ -1,9 +1,14 @@
 cd ~\Desktop\Plugins-Dev\EndStone\Projects\endstone-easybackuper\
-Remove-Item '.\dist\*' -Recurse
-Remove-Item '.\build\*' -Recurse
-Remove-Item '.\src\endstone_easybackuper.egg-info' -Recurse
-python .\setup.py sdist build
-pipx run build --wheel
-cd ~\Desktop\Plugins-Dev\Endstone\
-Remove-Item 'C:\Users\HeYuHan\Desktop\Plugins-Dev\Endstone\bedrock_server\plugins\endstone_easybackuper*.whl'
-Copy-Item -Path 'C:\Users\HeYuHan\Desktop\Plugins-Dev\EndStone\Projects\endstone-easybackuper\dist\end*.whl' -Destination 'C:\Users\HeYuHan\Desktop\Plugins-Dev\Endstone\bedrock_server\plugins'
+
+Write-Host "=== 清理旧产物 ===" -ForegroundColor Cyan
+Remove-Item '.\dist\*' -Recurse -ErrorAction SilentlyContinue
+
+Write-Host "=== 构建 wheel ===" -ForegroundColor Cyan
+python -m build --wheel
+
+Write-Host "=== 部署到服务器 ===" -ForegroundColor Cyan
+Remove-Item 'C:\Users\HeYuHan\Desktop\Plugins-Dev\EndStone\bedrock_server\plugins\endstone_easybackuper*.whl' -ErrorAction SilentlyContinue
+Copy-Item -Path 'C:\Users\HeYuHan\Desktop\Plugins-Dev\EndStone\Projects\endstone-easybackuper\dist\end*.whl' -Destination 'C:\Users\HeYuHan\Desktop\Plugins-Dev\EndStone\bedrock_server\plugins'
+
+Write-Host "=== 完成 ===" -ForegroundColor Green
+Get-ChildItem 'C:\Users\HeYuHan\Desktop\Plugins-Dev\EndStone\bedrock_server\plugins\endstone_easybackuper*.whl'
