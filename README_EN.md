@@ -245,6 +245,18 @@ Configuration file location: `plugins/EasyBackuper/config/EasyBackuper.json`
    /backup reload
    ```
 
+> 💡 **Custom 7z path on Linux**: The official EndStone Docker image does not include `p7zip-full` (there is no `7z` in `PATH`). If `7z` cannot be called directly on your server, set `exe_7z_path` to a custom 7z executable (e.g. a self-built `7za`, or the actual `7z` path after installing p7zip-full). **Both backup and restore (restoration handler) read this configuration**:
+>
+> ```json
+> {
+>   "Compression": {
+>     "exe_7z_path": "/path/to/your/7za"
+>   }
+> }
+> ```
+>
+> Run `/backup reload` to apply the change. If no custom path is configured, the restoration handler automatically falls back to `7z` in `PATH` on non-Windows platforms.
+
 ### 🔄 Backup Restoration Handler
 
 The restoration handler (`restore_handler.exe`) is used to safely restore backup files:
@@ -259,6 +271,8 @@ The restoration handler (`restore_handler.exe`) is used to safely restore backup
    ```
    plugins/EasyBackuper/restore_handler.exe
    ```
+
+> 💡 **Output Language**: The restore handler's log output language follows the `Language` setting in `EasyBackuper.json` (`zh_CN` for Chinese / `en_US` for English). No separate English executable is needed.
 
 ### 🚀 Multi-threading Optimization Suggestions
 

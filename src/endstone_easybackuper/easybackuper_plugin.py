@@ -19,7 +19,7 @@ from .bstats import BStats, SimplePie
 plugin_name = "EasyBackuper"
 plugin_name_smallest = "easybackuper"
 plugin_description = "一个基于 EndStone 的轻量级、高性能、功能全面的Minecraft服务器热备份插件 / A lightweight, high-performance, and feature-rich hot backup plugin for Minecraft servers based on EndStone."
-plugin_version = "0.4.5"
+plugin_version = "0.4.6-beta.1"
 plugin_author = ["梦涵LOVE"]
 plugin_website = "https://www.minebbs.com/resources/easybackuper-eb-minecraft.14896/"
 plugin_github_link = "https://github.com/MengHanLOVE1027/endstone-easybackuper"
@@ -32,7 +32,7 @@ current_plugin_version = "v" + plugin_version
 plugin_full_name = plugin_name + " " + current_plugin_version
 
 # 读取文件内容
-with open("./server.properties", "r") as file:
+with open("./server.properties", "r", encoding="utf-8") as file:
     server_properties_file = file.read()
 
 plugin_path = Path(f"./plugins/{plugin_name}")

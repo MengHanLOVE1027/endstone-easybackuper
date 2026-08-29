@@ -4,6 +4,22 @@
 
 ---
 
+## [0.4.6-beta.1] - 2026-08-29
+
+### 🐛 修复
+- 修复读取 `server.properties` 时因编码问题导致的 `UnicodeDecodeError`（读取时指定 UTF-8 编码）（[#21](https://github.com/MengHanLOVE1027/endstone-easybackuper/issues/21)）
+- 修复回档程序在 Linux 上因 EndStone 官方镜像不含 `p7zip-full` 而报 `exec: "7z": executable file not found` 的问题（[#22](https://github.com/MengHanLOVE1027/endstone-easybackuper/issues/22)）
+
+### ✨ 新增
+- 回档程序支持读取配置文件中的 `Language` 项（`zh_CN`/`en_US`），输出日志自动切换中英文
+- 回档程序支持通过 `Compression.exe_7z_path` 自定义 7z 路径，备份与回档共用该配置
+- 合并回档程序为单一二进制，删除单独的英文版 `restore_handler_en` 及 CI 中对应的 `_en` 构建产物
+
+### 🔧 改进
+- 更新 README 与英文文档，补充 Linux 自定义 7z 路径及回档程序语言跟随 `Language` 配置的说明
+
+---
+
 ## [0.4.5] - 2026-08-12
 
 ### 🐛 修复

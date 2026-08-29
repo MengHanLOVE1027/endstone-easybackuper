@@ -81,7 +81,127 @@ var (
 	yellow       = color.New(color.FgYellow).SprintFunc()
 	red          = color.New(color.FgRed).SprintFunc()
 	green        = color.New(color.FgGreen).SprintFunc()
+
+	// 语言与翻译
+	currentLanguage = "zh_CN" // 当前语言，从配置文件 Language 读取 (zh_CN / en_US)
+
+	// enMessages 英文翻译表，key 为中文原文；未收录时回退中文
+	enMessages = map[string]string{
+		"所有可能的配置文件路径都不存在，使用默认配置": "All possible configuration file paths do not exist, using default configuration",
+		"当前平台不支持默认的 7za.exe，回退到 PATH 中的 7z": "Default 7za.exe is not supported on this platform, falling back to 7z in PATH",
+		"7z解压完成": "7z extraction completed",
+		"tar解压完成": "tar extraction completed",
+		"7z压缩完成": "7z compression completed",
+		"tar压缩完成": "tar compression completed",
+		"服务器已关闭": "Server has been shut down",
+		"目录删除完成": "Directory removal completed",
+		"配置为回档前自动备份当前世界": "Configured to automatically backup current world before restore",
+		"回档前备份完成": "Pre-restore backup completed",
+		"配置为不自动重启服务器": "Configured not to automatically restart server",
+		"配置为回档后自动重启服务器": "Configured to automatically restart server after restore",
+		"正在启动服务器...": "Starting server...",
+		"暂不支持Linux/Mac": "Linux/Mac not yet supported",
+		"请手动启动服务器": "Please start server manually",
+		"服务器启动命令已执行": "Server start command has been executed",
+		"EasyBackuper 回档处理程序启动": "EasyBackuper Restore Handler Started",
+		"配置为不备份当前世界": "Configured not to backup current world",
+		"开始恢复备份": "Starting backup restore",
+		"检测到.7z格式备份文件，使用7z解压": "Detected .7z format backup file, using 7z to extract",
+		"检测到.zip格式备份文件，使用7z解压": "Detected .zip format backup file, using 7z to extract",
+		"检测到.tar.gz格式备份文件，使用tar解压": "Detected .tar.gz format backup file, using tar to extract",
+		"tar解压失败，尝试使用7z解压": "tar extraction failed, trying to use 7z to extract",
+		"使用配置中的7z解压": "Using 7z from configuration to extract",
+		"使用配置中的tar解压": "Using tar from configuration to extract",
+		"使用默认的7z解压": "Using default 7z to extract",
+		"开始复制文件...": "Starting file copy...",
+		"文件复制完成": "File copy completed",
+		"备份恢复完成": "Backup restore completed",
+
+		"使用配置文件路径: %s": "Using configuration file path: %s",
+		"成功加载配置文件: %s": "Successfully loaded configuration file: %s",
+		"DEBUG模式: %v": "DEBUG mode: %v",
+		"MaxWorkers: %d": "MaxWorkers: %d",
+		"复制文件: %s --> %s": "Copying file:%s --> %s",
+		"创建目录: %s": "Created directory: %s",
+		"创建目录: %s ==> %s": "Created directory: %s ==> %s",
+		"配置的7z路径不存在: %s，回退到 PATH 中的 7z": "Configured 7z path does not exist: %s, falling back to 7z in PATH",
+		"使用7z解压: %s": "Extracting with 7z: %s",
+		"解压目标: %s --> %s": "Extracting to: %s --> %s",
+		"使用tar解压: %s": "Extracting with tar: %s",
+		"使用7z压缩: %s": "Compressing with 7z: %s",
+		"压缩目标: %s --> %s": "Compressing to: %s --> %s",
+		"备份文件已保存: %s": "Backup file saved: %s",
+		"使用tar压缩: %s": "Compressing with tar: %s",
+		"获取进程列表失败: %v": "Failed to get process list: %v",
+		"检测到%s进程正在运行，等待服务器关闭": "Detected %s process is running, waiting for server to shutdown",
+		"正在删除目录: %s": "Removing directory: %s",
+		"删除文件: %s --> [已删除]": "Deleting file: %s --> [Deleted]",
+		"正在备份当前世界: %s": "Backing up current world: %s",
+		"等待 %d 秒后启动服务器...": "Waiting %d seconds before starting server...",
+		"启动脚本路径: %s": "Start script path: %s",
+		"服务器目录: %s": "Server directory: %s",
+		"启动脚本完整路径: %s": "Full path of start script: %s",
+		"启动脚本不存在: %s": "Start script does not exist: %s",
+		"执行命令: %s": "Executing command: %s",
+		"工作目录: %s": "Working directory: %s",
+		"启动服务器失败: %v": "Failed to start server: %v",
+		"Go版本: %s": "Go version: %s",
+		"操作系统: %s/%s": "Operating system: %s/%s",
+		"切换工作目录失败: %v": "Failed to change working directory: %v",
+		"切换工作目录到: %s": "Changed working directory to: %s",
+		"未检测到%s进程，继续回档操作": "No %s process detected, continuing with restore operation",
+		"回档前备份失败: %v": "Pre-restore backup failed: %v",
+		"创建临时目录失败: %v": "Failed to create temporary directory: %v",
+		"创建临时目录: %s": "Created temporary directory: %s",
+		"解压失败: %v": "Extraction failed: %v",
+		"删除旧世界目录失败: %v": "Failed to remove old world directory: %v",
+		"复制目标: %s ==> %s": "Copy target: %s ==> %s",
+		"使用 %d 个goroutine进行文件复制": "Using %d goroutines for file copying",
+		"文件复制失败: %v": "File copy failed: %v",
+
+		"创建日志目录失败: %v": "Failed to create log directory: %v",
+		"打开日志文件失败: %v": "Failed to open log file: %v",
+		"读取配置文件失败: %v": "Failed to read configuration file: %v",
+		"解析配置文件失败: %v": "Failed to parse configuration file: %v",
+		"打开源文件失败: %v": "Failed to open source file: %v",
+		"创建目标目录失败: %v": "Failed to create destination directory: %v",
+		"创建目标文件失败: %v": "Failed to create destination file: %v",
+		"复制文件内容失败: %v": "Failed to copy file content: %v",
+		"遍历源目录失败: %v": "Failed to traverse source directory: %v",
+		"计算相对路径失败: %v": "Failed to calculate relative path: %v",
+		"创建目录失败: %v": "Failed to create directory: %v",
+		"7z解压失败: %v\n输出: %s": "7z extraction failed: %v\nOutput: %s",
+		"打开压缩文件失败: %v": "Failed to open archive file: %v",
+		"创建gzip读取器失败: %v": "Failed to create gzip reader: %v",
+		"读取tar头部失败: %v": "Failed to read tar header: %v",
+		"创建文件目录失败: %v": "Failed to create file directory: %v",
+		"创建文件失败: %v": "Failed to create file: %v",
+		"写入文件失败: %v": "Failed to write file: %v",
+		"设置文件权限失败: %v": "Failed to set file permissions: %v",
+		"7z压缩失败: %v\n输出: %s": "7z compression failed: %v\nOutput: %s",
+		"创建压缩文件失败: %v": "Failed to create archive file: %v",
+		"压缩过程中发生错误: %v": "Error occurred during compression: %v",
+		"遍历目录失败: %v": "Failed to traverse directory: %v",
+		"删除目录失败: %v": "Failed to remove directory: %v",
+		"创建备份目录失败: %v": "Failed to create backup directory: %v",
+		"创建临时备份目录失败: %v": "Failed to create temporary backup directory: %v",
+		"备份世界目录失败: %v": "Failed to backup world directory: %v",
+	}
 )
+
+// T 根据当前语言翻译消息，支持 fmt.Sprintf 风格参数；未收录或语言不匹配时回退中文原文。
+func T(text string, args ...interface{}) string {
+	translated := text
+	if currentLanguage == "en_US" {
+		if v, ok := enMessages[text]; ok {
+			translated = v
+		}
+	}
+	if len(args) > 0 {
+		return fmt.Sprintf(translated, args...)
+	}
+	return translated
+}
 
 // pluginPrint 自定义日志输出
 func pluginPrint(text string, level string) {
@@ -132,7 +252,7 @@ func setupLogging(serverDir string) error {
 	logDir := filepath.Join(serverDir, "logs", pluginName)
 	err := os.MkdirAll(logDir, 0755)
 	if err != nil {
-		return fmt.Errorf("创建日志目录失败: %v", err)
+		return fmt.Errorf(T("创建日志目录失败: %v"), err)
 	}
 
 	logFileName := fmt.Sprintf("%s_restore_%s.log", pluginNameSmall,
@@ -141,7 +261,7 @@ func setupLogging(serverDir string) error {
 
 	logFile, err = os.OpenFile(logFilePath, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0644)
 	if err != nil {
-		return fmt.Errorf("打开日志文件失败: %v", err)
+		return fmt.Errorf(T("打开日志文件失败: %v"), err)
 	}
 
 	// 设置日志级别
@@ -174,7 +294,8 @@ func loadConfig(serverDir string) error {
 	}
 
 	if configPath == "" {
-		pluginPrint("所有可能的配置文件路径都不存在，使用默认配置", "WARNING")
+		pluginPrint(T("所有可能的配置文件路径都不存在，使用默认配置"), "WARNING")
+		currentLanguage = "zh_CN"
 		pluginConfig = PluginConfig{
 			Compression: CompressionConfig{
 				Method:    "zip",
@@ -202,19 +323,24 @@ func loadConfig(serverDir string) error {
 		return nil
 	}
 
-	pluginPrint(fmt.Sprintf("使用配置文件路径: %s", configPath), "INFO")
-
 	// 读取配置文件
 	data, err := os.ReadFile(configPath)
 	if err != nil {
-		return fmt.Errorf("读取配置文件失败: %v", err)
+		return fmt.Errorf(T("读取配置文件失败: %v"), err)
 	}
 
 	// 解析JSON
 	var config map[string]interface{}
 	if err := json.Unmarshal(data, &config); err != nil {
-		return fmt.Errorf("解析配置文件失败: %v", err)
+		return fmt.Errorf(T("解析配置文件失败: %v"), err)
 	}
+
+	// 读取语言配置
+	if lang, ok := config["Language"].(string); ok && lang != "" {
+		currentLanguage = lang
+	}
+
+	pluginPrint(T("使用配置文件路径: %s", configPath), "INFO")
 
 	// 初始化默认配置
 	pluginConfig = PluginConfig{
@@ -311,38 +437,38 @@ func loadConfig(serverDir string) error {
 
 	globalConfig.MaxWorkers = pluginConfig.MaxWorkers
 
-	pluginPrint(fmt.Sprintf("成功加载配置文件: %s", configPath), "SUCCESS")
-	pluginPrint(fmt.Sprintf("DEBUG模式: %v", globalConfig.Debug), "INFO")
-	pluginPrint(fmt.Sprintf("MaxWorkers: %d", globalConfig.MaxWorkers), "INFO")
+	pluginPrint(T("成功加载配置文件: %s", configPath), "SUCCESS")
+	pluginPrint(T("DEBUG模式: %v", globalConfig.Debug), "INFO")
+	pluginPrint(T("MaxWorkers: %d", globalConfig.MaxWorkers), "INFO")
 
 	return nil
 }
 
 // copyFileWithProgress 复制文件
 func copyFileWithProgress(src, dst string) error {
-	pluginPrint(fmt.Sprintf("复制文件: %s --> %s", src, dst), "DEBUG")
+	pluginPrint(T("复制文件: %s --> %s", src, dst), "DEBUG")
 
 	sourceFile, err := os.Open(src)
 	if err != nil {
-		return fmt.Errorf("打开源文件失败: %v", err)
+		return fmt.Errorf(T("打开源文件失败: %v"), err)
 	}
 	defer sourceFile.Close()
 
 	// 创建目标目录
 	dstDir := filepath.Dir(dst)
 	if err := os.MkdirAll(dstDir, 0755); err != nil {
-		return fmt.Errorf("创建目标目录失败: %v", err)
+		return fmt.Errorf(T("创建目标目录失败: %v"), err)
 	}
 
 	destinationFile, err := os.Create(dst)
 	if err != nil {
-		return fmt.Errorf("创建目标文件失败: %v", err)
+		return fmt.Errorf(T("创建目标文件失败: %v"), err)
 	}
 	defer destinationFile.Close()
 
 	_, err = io.Copy(destinationFile, sourceFile)
 	if err != nil {
-		return fmt.Errorf("复制文件内容失败: %v", err)
+		return fmt.Errorf(T("复制文件内容失败: %v"), err)
 	}
 
 	// 复制文件权限
@@ -358,9 +484,9 @@ func copyFileWithProgress(src, dst string) error {
 func copyDirWithProgress(src, dst string, maxThreads int) error {
 	if _, err := os.Stat(dst); os.IsNotExist(err) {
 		if err := os.MkdirAll(dst, 0755); err != nil {
-			return fmt.Errorf("创建目标目录失败: %v", err)
+			return fmt.Errorf(T("创建目标目录失败: %v"), err)
 		}
-		pluginPrint(fmt.Sprintf("创建目录: %s", dst), "DEBUG")
+		pluginPrint(T("创建目录: %s", dst), "DEBUG")
 	}
 
 	// 收集所有文件
@@ -381,21 +507,21 @@ func copyDirWithProgress(src, dst string, maxThreads int) error {
 	})
 
 	if err != nil {
-		return fmt.Errorf("遍历源目录失败: %v", err)
+		return fmt.Errorf(T("遍历源目录失败: %v"), err)
 	}
 
 	// 先创建所有目录
 	for _, dir := range dirs {
 		relPath, err := filepath.Rel(src, dir)
 		if err != nil {
-			return fmt.Errorf("计算相对路径失败: %v", err)
+			return fmt.Errorf(T("计算相对路径失败: %v"), err)
 		}
 		dstDir := filepath.Join(dst, relPath)
 		if _, err := os.Stat(dstDir); os.IsNotExist(err) {
 			if err := os.MkdirAll(dstDir, 0755); err != nil {
-				return fmt.Errorf("创建目录失败: %v", err)
+				return fmt.Errorf(T("创建目录失败: %v"), err)
 			}
-			pluginPrint(fmt.Sprintf("创建目录: %s ==> %s", dir, dstDir), "DEBUG")
+			pluginPrint(T("创建目录: %s ==> %s", dir, dstDir), "DEBUG")
 		}
 	}
 
@@ -426,7 +552,7 @@ func copyDirWithProgress(src, dst string, maxThreads int) error {
 	for _, file := range files {
 		relPath, err := filepath.Rel(src, file)
 		if err != nil {
-			errors <- fmt.Errorf("计算相对路径失败: %v", err)
+			errors <- fmt.Errorf(T("计算相对路径失败: %v"), err)
 			continue
 		}
 		dstPath := filepath.Join(dst, relPath)
@@ -445,41 +571,63 @@ func copyDirWithProgress(src, dst string, maxThreads int) error {
 	}
 }
 
+// resolve7zPath 获取实际使用的7z可执行文件路径
+// 优先使用配置中的 exe_7z_path；
+// 非Windows平台上，若配置的是默认的 .exe 文件或路径不存在，则回退到 PATH 中的 7z。
+func resolve7zPath() string {
+	configured := strings.TrimSpace(pluginConfig.Compression.Exe7zPath)
+
+	if configured == "" {
+		return "7z"
+	}
+
+	// 非Windows平台上，默认配置指向 Windows 的 7za.exe，回退到 PATH 中的 7z
+	if runtime.GOOS != "windows" && strings.HasSuffix(strings.ToLower(configured), ".exe") {
+		pluginPrint(T("当前平台不支持默认的 7za.exe，回退到 PATH 中的 7z"), "WARNING")
+		return "7z"
+	}
+
+	// 配置的是含路径的文件，但文件不存在，回退到 PATH 中的 7z
+	if strings.ContainsAny(configured, "/\\") {
+		if _, err := os.Stat(configured); err != nil {
+			pluginPrint(T("配置的7z路径不存在: %s，回退到 PATH 中的 7z", configured), "WARNING")
+			return "7z"
+		}
+	}
+
+	return configured
+}
+
 // extractWith7z 使用7z解压
 func extractWith7z(archivePath, destDir string) error {
-	pluginPrint(fmt.Sprintf("使用7z解压: %s", archivePath), "INFO")
-	pluginPrint(fmt.Sprintf("解压目标: %s --> %s", archivePath, destDir), "INFO")
+	pluginPrint(T("使用7z解压: %s", archivePath), "INFO")
+	pluginPrint(T("解压目标: %s --> %s", archivePath, destDir), "INFO")
 
-	var cmd *exec.Cmd
-	if runtime.GOOS == "windows" {
-		cmd = exec.Command(pluginConfig.Compression.Exe7zPath, "x", archivePath, "-o"+destDir, "-y")
-	} else {
-		cmd = exec.Command("7z", "x", archivePath, "-o"+destDir, "-y")
-	}
+	cmd := exec.Command(resolve7zPath(), "x", archivePath, "-o"+destDir, "-y")
 
 	output, err := cmd.CombinedOutput()
 	if err != nil {
-		return fmt.Errorf("7z解压失败: %v\n输出: %s", err, string(output))
+		return fmt.Errorf(T("7z解压失败: %v\n输出: %s"), err, string(output))
 	}
 
-	pluginPrint("7z解压完成", "SUCCESS")
+	pluginPrint(T("7z解压完成"), "SUCCESS")
 	return nil
 }
 
 // extractWithTarGz 使用tar解压
 func extractWithTarGz(archivePath, destDir string) error {
-	pluginPrint(fmt.Sprintf("使用tar解压: %s", archivePath), "INFO")
-	pluginPrint(fmt.Sprintf("解压目标: %s --> %s", archivePath, destDir), "INFO")
+	pluginPrint(T("使用tar解压: %s", archivePath), "INFO")
+	pluginPrint(T("解压目标: %s --> %s", archivePath, destDir), "INFO")
 
 	file, err := os.Open(archivePath)
 	if err != nil {
-		return fmt.Errorf("打开压缩文件失败: %v", err)
+		return fmt.Errorf(T("打开压缩文件失败: %v"), err)
 	}
 	defer file.Close()
 
 	gzReader, err := gzip.NewReader(file)
 	if err != nil {
-		return fmt.Errorf("创建gzip读取器失败: %v", err)
+		return fmt.Errorf(T("创建gzip读取器失败: %v"), err)
 	}
 	defer gzReader.Close()
 
@@ -491,7 +639,7 @@ func extractWithTarGz(archivePath, destDir string) error {
 			break
 		}
 		if err != nil {
-			return fmt.Errorf("读取tar头部失败: %v", err)
+			return fmt.Errorf(T("读取tar头部失败: %v"), err)
 		}
 
 		targetPath := filepath.Join(destDir, header.Name)
@@ -499,67 +647,62 @@ func extractWithTarGz(archivePath, destDir string) error {
 		switch header.Typeflag {
 		case tar.TypeDir:
 			if err := os.MkdirAll(targetPath, 0755); err != nil {
-				return fmt.Errorf("创建目录失败: %v", err)
+				return fmt.Errorf(T("创建目录失败: %v"), err)
 			}
 		case tar.TypeReg:
 			// 创建目录
 			if err := os.MkdirAll(filepath.Dir(targetPath), 0755); err != nil {
-				return fmt.Errorf("创建文件目录失败: %v", err)
+				return fmt.Errorf(T("创建文件目录失败: %v"), err)
 			}
 
 			// 创建文件
 			outFile, err := os.Create(targetPath)
 			if err != nil {
-				return fmt.Errorf("创建文件失败: %v", err)
+				return fmt.Errorf(T("创建文件失败: %v"), err)
 			}
 
 			if _, err := io.Copy(outFile, tarReader); err != nil {
 				outFile.Close()
-				return fmt.Errorf("写入文件失败: %v", err)
+				return fmt.Errorf(T("写入文件失败: %v"), err)
 			}
 			outFile.Close()
 
 			// 设置文件权限
 			if err := os.Chmod(targetPath, os.FileMode(header.Mode)); err != nil {
-				return fmt.Errorf("设置文件权限失败: %v", err)
+				return fmt.Errorf(T("设置文件权限失败: %v"), err)
 			}
 		}
 	}
 
-	pluginPrint("tar解压完成", "SUCCESS")
+	pluginPrint(T("tar解压完成"), "SUCCESS")
 	return nil
 }
 
 // compressWith7z 使用7z压缩
 func compressWith7z(srcDir, destFile string) error {
-	pluginPrint(fmt.Sprintf("使用7z压缩: %s", srcDir), "INFO")
-	pluginPrint(fmt.Sprintf("压缩目标: %s --> %s", srcDir, destFile), "INFO")
+	pluginPrint(T("使用7z压缩: %s", srcDir), "INFO")
+	pluginPrint(T("压缩目标: %s --> %s", srcDir, destFile), "INFO")
 
-	var cmd *exec.Cmd
-	if runtime.GOOS == "windows" {
-		cmd = exec.Command(pluginConfig.Compression.Exe7zPath, "a", destFile, srcDir+string(filepath.Separator)+"*", "-y")
-	} else {
-		cmd = exec.Command("7z", "a", destFile, srcDir+string(filepath.Separator)+"*", "-y")
-	}
+	cmd := exec.Command(resolve7zPath(), "a", destFile, srcDir+string(filepath.Separator)+"*", "-y")
 
 	output, err := cmd.CombinedOutput()
 	if err != nil {
-		return fmt.Errorf("7z压缩失败: %v\n输出: %s", err, string(output))
+		return fmt.Errorf(T("7z压缩失败: %v\n输出: %s"), err, string(output))
 	}
 
-	pluginPrint("7z压缩完成", "SUCCESS")
-	pluginPrint(fmt.Sprintf("备份文件已保存: %s", destFile), "SUCCESS")
+	pluginPrint(T("7z压缩完成"), "SUCCESS")
+	pluginPrint(T("备份文件已保存: %s", destFile), "SUCCESS")
 	return nil
 }
 
 // compressWithTarGz 使用tar压缩
 func compressWithTarGz(srcDir, destFile string) error {
-	pluginPrint(fmt.Sprintf("使用tar压缩: %s", srcDir), "INFO")
-	pluginPrint(fmt.Sprintf("压缩目标: %s --> %s", srcDir, destFile), "INFO")
+	pluginPrint(T("使用tar压缩: %s", srcDir), "INFO")
+	pluginPrint(T("压缩目标: %s --> %s", srcDir, destFile), "INFO")
 
 	file, err := os.Create(destFile)
 	if err != nil {
-		return fmt.Errorf("创建压缩文件失败: %v", err)
+		return fmt.Errorf(T("创建压缩文件失败: %v"), err)
 	}
 	defer file.Close()
 
@@ -612,11 +755,11 @@ func compressWithTarGz(srcDir, destFile string) error {
 	})
 
 	if err != nil {
-		return fmt.Errorf("压缩过程中发生错误: %v", err)
+		return fmt.Errorf(T("压缩过程中发生错误: %v"), err)
 	}
 
-	pluginPrint("tar压缩完成", "SUCCESS")
-	pluginPrint(fmt.Sprintf("备份文件已保存: %s", destFile), "SUCCESS")
+	pluginPrint(T("tar压缩完成"), "SUCCESS")
+	pluginPrint(T("备份文件已保存: %s", destFile), "SUCCESS")
 	return nil
 }
 
@@ -624,7 +767,7 @@ func compressWithTarGz(srcDir, destFile string) error {
 func isProcessRunning(processName string) bool {
 	processes, err := ps.Processes()
 	if err != nil {
-		pluginPrint(fmt.Sprintf("获取进程列表失败: %v", err), "ERROR")
+		pluginPrint(T("获取进程列表失败: %v", err), "ERROR")
 		return false
 	}
 
@@ -638,18 +781,18 @@ func isProcessRunning(processName string) bool {
 
 // waitForProcessExit 等待进程退出
 func waitForProcessExit(processName string) {
-	pluginPrint(fmt.Sprintf("检测到%s进程正在运行，等待服务器关闭", processName), "WARNING")
+	pluginPrint(T("检测到%s进程正在运行，等待服务器关闭", processName), "WARNING")
 
 	for isProcessRunning(processName) {
 		time.Sleep(1 * time.Second)
 	}
 
-	pluginPrint("服务器已关闭", "SUCCESS")
+	pluginPrint(T("服务器已关闭"), "SUCCESS")
 }
 
 // removeDir 删除目录
 func removeDir(dir string) error {
-	pluginPrint(fmt.Sprintf("正在删除目录: %s", dir), "INFO")
+	pluginPrint(T("正在删除目录: %s", dir), "INFO")
 
 	err := filepath.Walk(dir, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
@@ -660,28 +803,28 @@ func removeDir(dir string) error {
 		os.Chmod(path, 0666)
 
 		if !info.IsDir() {
-			pluginPrint(fmt.Sprintf("删除文件: %s --> [已删除]", path), "DEBUG")
+			pluginPrint(T("删除文件: %s --> [已删除]", path), "DEBUG")
 		}
 		return nil
 	})
 
 	if err != nil {
-		return fmt.Errorf("遍历目录失败: %v", err)
+		return fmt.Errorf(T("遍历目录失败: %v"), err)
 	}
 
 	// 删除整个目录
 	err = os.RemoveAll(dir)
 	if err != nil {
-		return fmt.Errorf("删除目录失败: %v", err)
+		return fmt.Errorf(T("删除目录失败: %v"), err)
 	}
 
-	pluginPrint("目录删除完成", "SUCCESS")
+	pluginPrint(T("目录删除完成"), "SUCCESS")
 	return nil
 }
 
 // backupCurrentWorld 备份当前世界
 func backupCurrentWorld() error {
-	pluginPrint("配置为回档前自动备份当前世界", "INFO")
+	pluginPrint(T("配置为回档前自动备份当前世界"), "INFO")
 
 	// 获取当前时间作为备份名称的一部分
 	currentTime := time.Now().Format("20060102_150405")
@@ -690,7 +833,7 @@ func backupCurrentWorld() error {
 	// 获取备份目录
 	backupDir := "./backup"
 	if err := os.MkdirAll(backupDir, 0755); err != nil {
-		return fmt.Errorf("创建备份目录失败: %v", err)
+		return fmt.Errorf(T("创建备份目录失败: %v"), err)
 	}
 
 	// 创建临时目录
@@ -700,7 +843,7 @@ func backupCurrentWorld() error {
 	}
 
 	if err := os.MkdirAll(tempBackupDir, 0755); err != nil {
-		return fmt.Errorf("创建临时备份目录失败: %v", err)
+		return fmt.Errorf(T("创建临时备份目录失败: %v"), err)
 	}
 	defer os.RemoveAll(tempBackupDir)
 
@@ -708,10 +851,10 @@ func backupCurrentWorld() error {
 	worldsDir := filepath.Join(restoreInfo.ServerDir, "worlds")
 	tempWorldBackupDir := filepath.Join(tempBackupDir, restoreInfo.WorldName)
 
-	pluginPrint(fmt.Sprintf("正在备份当前世界: %s", worldsDir), "INFO")
+	pluginPrint(T("正在备份当前世界: %s", worldsDir), "INFO")
 
 	if err := copyDirWithProgress(worldsDir, tempWorldBackupDir, globalConfig.MaxWorkers); err != nil {
-		return fmt.Errorf("备份世界目录失败: %v", err)
+		return fmt.Errorf(T("备份世界目录失败: %v"), err)
 	}
 
 	// 根据配置选择压缩方式
@@ -748,7 +891,7 @@ func backupCurrentWorld() error {
 		}
 	}
 
-	pluginPrint("回档前备份完成", "SUCCESS")
+	pluginPrint(T("回档前备份完成"), "SUCCESS")
 	return nil
 }
 
@@ -756,17 +899,17 @@ func backupCurrentWorld() error {
 func restartServer() {
 	restartConfig := pluginConfig.Restore.Config.RestartServer
 	if !restartConfig.Status {
-		pluginPrint("配置为不自动重启服务器", "INFO")
+		pluginPrint(T("配置为不自动重启服务器"), "INFO")
 		return
 	}
 
-	pluginPrint("配置为回档后自动重启服务器", "INFO")
+	pluginPrint(T("配置为回档后自动重启服务器"), "INFO")
 	waitTime := restartConfig.WaitTimeS
 	if waitTime == 0 {
 		waitTime = 10
 	}
 
-	pluginPrint(fmt.Sprintf("等待 %d 秒后启动服务器...", waitTime), "INFO")
+	pluginPrint(T("等待 %d 秒后启动服务器...", waitTime), "INFO")
 	time.Sleep(time.Duration(waitTime) * time.Second)
 
 	startScriptPath := restartConfig.StartScriptPath
@@ -774,7 +917,7 @@ func restartServer() {
 		startScriptPath = "./start.bat"
 	}
 
-	pluginPrint(fmt.Sprintf("启动脚本路径: %s", startScriptPath), "INFO")
+	pluginPrint(T("启动脚本路径: %s", startScriptPath), "INFO")
 
 	// 解析启动脚本的绝对路径
 	var startScriptFullPath string
@@ -784,15 +927,15 @@ func restartServer() {
 		startScriptFullPath = filepath.Join(restoreInfo.ServerDir, startScriptPath)
 	}
 
-	pluginPrint(fmt.Sprintf("服务器目录: %s", restoreInfo.ServerDir), "INFO")
-	pluginPrint(fmt.Sprintf("启动脚本完整路径: %s", startScriptFullPath), "INFO")
+	pluginPrint(T("服务器目录: %s", restoreInfo.ServerDir), "INFO")
+	pluginPrint(T("启动脚本完整路径: %s", startScriptFullPath), "INFO")
 
 	// 执行启动脚本
-	pluginPrint("正在启动服务器...", "INFO")
+	pluginPrint(T("正在启动服务器..."), "INFO")
 
 	// 检查脚本文件是否存在
 	if _, err := os.Stat(startScriptFullPath); os.IsNotExist(err) {
-		pluginPrint(fmt.Sprintf("启动脚本不存在: %s", startScriptFullPath), "ERROR")
+		pluginPrint(T("启动脚本不存在: %s", startScriptFullPath), "ERROR")
 		return
 	}
 
@@ -806,8 +949,8 @@ func restartServer() {
 		// Linux/Mac 上直接执行脚本文件
 		// cmd = exec.Command(startScriptFullPath)
 		// 暂不支持Linux/Mac
-		pluginPrint("暂不支持Linux/Mac", "ERROR")
-		pluginPrint("请手动启动服务器", "INFO")
+		pluginPrint(T("暂不支持Linux/Mac"), "ERROR")
+		pluginPrint(T("请手动启动服务器"), "INFO")
 		return
 	}
 
@@ -815,14 +958,14 @@ func restartServer() {
 	cmd.Dir = restoreInfo.ServerDir
 
 	// 打印命令信息用于调试
-	pluginPrint(fmt.Sprintf("执行命令: %s", cmd.String()), "INFO")
-	pluginPrint(fmt.Sprintf("工作目录: %s", cmd.Dir), "INFO")
+	pluginPrint(T("执行命令: %s", cmd.String()), "INFO")
+	pluginPrint(T("工作目录: %s", cmd.Dir), "INFO")
 
 	// 执行命令并等待完成
 	if err := cmd.Run(); err != nil {
-		pluginPrint(fmt.Sprintf("启动服务器失败: %v", err), "ERROR")
+		pluginPrint(T("启动服务器失败: %v", err), "ERROR")
 	} else {
-		pluginPrint("服务器启动命令已执行", "SUCCESS")
+		pluginPrint(T("服务器启动命令已执行"), "SUCCESS")
 	}
 }
 
@@ -866,18 +1009,18 @@ func main() {
 	defer logFile.Close()
 
 	pluginPrint(strings.Repeat("=", 60), "INFO")
-	pluginPrint("EasyBackuper 回档处理程序启动", "SUCCESS")
-	pluginPrint(fmt.Sprintf("Go版本: %s", runtime.Version()), "INFO")
-	pluginPrint(fmt.Sprintf("操作系统: %s/%s", runtime.GOOS, runtime.GOARCH), "INFO")
-	pluginPrint(fmt.Sprintf("工作目录: %s", restoreInfo.ServerDir), "INFO")
+	pluginPrint(T("EasyBackuper 回档处理程序启动"), "SUCCESS")
+	pluginPrint(T("Go版本: %s", runtime.Version()), "INFO")
+	pluginPrint(T("操作系统: %s/%s", runtime.GOOS, runtime.GOARCH), "INFO")
+	pluginPrint(T("工作目录: %s", restoreInfo.ServerDir), "INFO")
 	pluginPrint(strings.Repeat("=", 60), "INFO")
 
 	// 切换工作目录
 	if err := os.Chdir(restoreInfo.ServerDir); err != nil {
-		pluginPrint(fmt.Sprintf("切换工作目录失败: %v", err), "ERROR")
+		pluginPrint(T("切换工作目录失败: %v", err), "ERROR")
 		os.Exit(1)
 	}
-	pluginPrint(fmt.Sprintf("切换工作目录到: %s", restoreInfo.ServerDir), "INFO")
+	pluginPrint(T("切换工作目录到: %s", restoreInfo.ServerDir), "INFO")
 
 	// 检测bedrock_server进程是否在运行
 	var processName string
@@ -890,7 +1033,7 @@ func main() {
 	if isProcessRunning(processName) {
 		waitForProcessExit(processName)
 	} else {
-		pluginPrint(fmt.Sprintf("未检测到%s进程，继续回档操作", processName), "INFO")
+		pluginPrint(T("未检测到%s进程，继续回档操作", processName), "INFO")
 	}
 
 	pluginPrint(strings.Repeat("=", 60), "INFO")
@@ -898,17 +1041,17 @@ func main() {
 	// 检查是否需要在回档前备份当前世界
 	if pluginConfig.Restore.Config.BackupOldWorldBeforeRestore {
 		if err := backupCurrentWorld(); err != nil {
-			pluginPrint(fmt.Sprintf("回档前备份失败: %v", err), "ERROR")
+			pluginPrint(T("回档前备份失败: %v", err), "ERROR")
 			// 继续执行，不终止
 		}
 	} else {
-		pluginPrint("配置为不备份当前世界", "INFO")
+		pluginPrint(T("配置为不备份当前世界"), "INFO")
 	}
 
 	pluginPrint(strings.Repeat("=", 60), "INFO")
 
 	// 恢复备份
-	pluginPrint("开始恢复备份", "INFO")
+	pluginPrint(T("开始恢复备份"), "INFO")
 	worldsDir := filepath.Join(restoreInfo.ServerDir, "worlds")
 
 	// 创建临时目录用于解压
@@ -918,12 +1061,12 @@ func main() {
 	}
 
 	if err := os.MkdirAll(tempDir, 0755); err != nil {
-		pluginPrint(fmt.Sprintf("创建临时目录失败: %v", err), "ERROR")
+		pluginPrint(T("创建临时目录失败: %v", err), "ERROR")
 		os.Exit(1)
 	}
 	defer os.RemoveAll(tempDir)
 
-	pluginPrint(fmt.Sprintf("创建临时目录: %s", tempDir), "INFO")
+	pluginPrint(T("创建临时目录: %s", tempDir), "INFO")
 
 	// 根据配置选择解压方式
 	tempWorldDir := filepath.Join(tempDir, restoreInfo.WorldName)
@@ -932,17 +1075,17 @@ func main() {
 	var err error
 	// 根据文件扩展名选择解压方式
 	if strings.HasSuffix(strings.ToLower(backupFilePath), ".7z") {
-		pluginPrint("检测到.7z格式备份文件，使用7z解压", "INFO")
+		pluginPrint(T("检测到.7z格式备份文件，使用7z解压"), "INFO")
 		err = extractWith7z(backupFilePath, tempWorldDir)
 	} else if strings.HasSuffix(strings.ToLower(backupFilePath), ".zip") {
-		pluginPrint("检测到.zip格式备份文件，使用7z解压", "INFO")
+		pluginPrint(T("检测到.zip格式备份文件，使用7z解压"), "INFO")
 		err = extractWith7z(backupFilePath, tempWorldDir)
 	} else if strings.HasSuffix(strings.ToLower(backupFilePath), ".tar.gz") || strings.HasSuffix(strings.ToLower(backupFilePath), ".tgz") {
-		pluginPrint("检测到.tar.gz格式备份文件，使用tar解压", "INFO")
+		pluginPrint(T("检测到.tar.gz格式备份文件，使用tar解压"), "INFO")
 		err = extractWithTarGz(backupFilePath, tempWorldDir)
 		// 如果tar解压失败，尝试使用7z解压
 		if err != nil {
-			pluginPrint("tar解压失败，尝试使用7z解压", "WARNING")
+			pluginPrint(T("tar解压失败，尝试使用7z解压"), "WARNING")
 			err = extractWith7z(backupFilePath, tempWorldDir)
 		}
 	} else {
@@ -954,20 +1097,20 @@ func main() {
 
 		switch compressionMethod {
 		case "7z", "zip":
-			pluginPrint("使用配置中的7z解压", "INFO")
+			pluginPrint(T("使用配置中的7z解压"), "INFO")
 			err = extractWith7z(backupFilePath, tempWorldDir)
 		case "tar":
-			pluginPrint("使用配置中的tar解压", "INFO")
+			pluginPrint(T("使用配置中的tar解压"), "INFO")
 			err = extractWithTarGz(backupFilePath, tempWorldDir)
 		default:
 			// 默认使用7z解压
-			pluginPrint("使用默认的7z解压", "INFO")
+			pluginPrint(T("使用默认的7z解压"), "INFO")
 			err = extractWith7z(backupFilePath, tempWorldDir)
 		}
 	}
 
 	if err != nil {
-		pluginPrint(fmt.Sprintf("解压失败: %v", err), "ERROR")
+		pluginPrint(T("解压失败: %v", err), "ERROR")
 		os.Exit(1)
 	}
 
@@ -977,7 +1120,7 @@ func main() {
 	currentWorldDir := filepath.Join(worldsDir, restoreInfo.WorldName)
 	if _, err := os.Stat(currentWorldDir); err == nil {
 		if err := removeDir(currentWorldDir); err != nil {
-			pluginPrint(fmt.Sprintf("删除旧世界目录失败: %v", err), "ERROR")
+			pluginPrint(T("删除旧世界目录失败: %v", err), "ERROR")
 			// 继续执行
 		}
 	}
@@ -985,19 +1128,19 @@ func main() {
 	pluginPrint(strings.Repeat("=", 60), "INFO")
 
 	// 复制文件从临时目录到目标目录
-	pluginPrint("开始复制文件...", "INFO")
-	pluginPrint(fmt.Sprintf("复制目标: %s ==> %s", tempWorldDir, worldsDir), "INFO")
-	pluginPrint(fmt.Sprintf("使用 %d 个goroutine进行文件复制", globalConfig.MaxWorkers), "INFO")
+	pluginPrint(T("开始复制文件..."), "INFO")
+	pluginPrint(T("复制目标: %s ==> %s", tempWorldDir, worldsDir), "INFO")
+	pluginPrint(T("使用 %d 个goroutine进行文件复制", globalConfig.MaxWorkers), "INFO")
 
 	if err := copyDirWithProgress(tempWorldDir, worldsDir, globalConfig.MaxWorkers); err != nil {
-		pluginPrint(fmt.Sprintf("文件复制失败: %v", err), "ERROR")
+		pluginPrint(T("文件复制失败: %v", err), "ERROR")
 		os.Exit(1)
 	}
 
-	pluginPrint("文件复制完成", "SUCCESS")
+	pluginPrint(T("文件复制完成"), "SUCCESS")
 	pluginPrint(strings.Repeat("=", 60), "INFO")
 
-	pluginPrint("备份恢复完成", "SUCCESS")
+	pluginPrint(T("备份恢复完成"), "SUCCESS")
 	pluginPrint(strings.Repeat("=", 60), "INFO")
 
 	// 重启服务器

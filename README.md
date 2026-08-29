@@ -241,6 +241,18 @@ EasyBackuper 是一个专为 Endstone 服务器设计的备份插件，旨在简
    /backup reload
    ```
 
+> 💡 **Linux 自定义 7z 路径**：EndStone 官方 Docker 镜像默认不包含 `p7zip-full`（PATH 中没有 `7z`）。若服务器上无法直接调用 `7z`，可通过 `exe_7z_path` 指定自定义的 7z 可执行文件（例如自行编译的 `7za`，或已安装 p7zip-full 后 `7z` 的实际路径）。**备份与回档（恢复处理器）都会读取该配置**：
+>
+> ```json
+> {
+>   "Compression": {
+>     "exe_7z_path": "/path/to/your/7za"
+>   }
+> }
+> ```
+>
+> 修改后执行 `/backup reload` 即可生效。若未指定自定义路径，回档程序在非 Windows 平台会自动回退到 PATH 中的 `7z`。
+
 ### 🔄 备份恢复处理器
 
 恢复处理器 (`restore_handler.exe`) 用于安全地恢复备份文件：
@@ -255,6 +267,8 @@ EasyBackuper 是一个专为 Endstone 服务器设计的备份插件，旨在简
    ```
    plugins/EasyBackuper/restore_handler.exe
    ```
+
+> 💡 **输出语言**：回档程序的输出日志语言跟随配置文件 `EasyBackuper.json` 中的 `Language` 项（`zh_CN` 中文 / `en_US` 英文），无需单独下载英文版可执行文件。
 
 ### 🚀 多线程优化建议
 
