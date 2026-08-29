@@ -110,14 +110,14 @@ jobs:
         if: steps.check.outputs.exists == 'false' || github.event_name == 'workflow_dispatch'
         working-directory: go/restore_handler
         run: |
-          GOOS=windows GOARCH=amd64 go build -ldflags="-s -w" -o restore_handler.exe main.go
+          GOOS=windows GOARCH=amd64 go build -ldflags="-s -w" -o restore_handler.exe .
           echo "Built: restore_handler.exe"
 
       - name: Build Go — restore_handler (Linux)
         if: steps.check.outputs.exists == 'false' || github.event_name == 'workflow_dispatch'
         working-directory: go/restore_handler
         run: |
-          GOOS=linux GOARCH=amd64 go build -ldflags="-s -w" -o restore_handler_linux main.go
+          GOOS=linux GOARCH=amd64 go build -ldflags="-s -w" -o restore_handler_linux .
           echo "Built: restore_handler_linux"
 
       # ────────────────────────────────────

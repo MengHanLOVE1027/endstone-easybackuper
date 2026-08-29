@@ -1,16 +1,16 @@
 cd ~\Desktop\Plugins-Dev\EndStone\Projects\endstone-easybackuper\
 
-Write-Host "=== æ¸…ç†æ—§äº§ç‰© ===" -ForegroundColor Cyan
+Write-Host "=== ÇåÀí¾É²úÎï ===" -ForegroundColor Cyan
 Remove-Item '.\dist\*' -Recurse -ErrorAction SilentlyContinue
 
-Write-Host "=== æ„å»º wheel ===" -ForegroundColor Cyan
+Write-Host "=== ¹¹½¨ wheel ===" -ForegroundColor Cyan
 python -m build --wheel
 
-Write-Host "=== éƒ¨ç½²åˆ°æœåŠ¡å™¨ ===" -ForegroundColor Cyan
+Write-Host "=== ²¿Êğµ½·şÎñÆ÷ ===" -ForegroundColor Cyan
 Remove-Item 'C:\Users\HeYuHan\Desktop\Plugins-Dev\EndStone\bedrock_server\plugins\endstone_easybackuper*.whl' -ErrorAction SilentlyContinue
 Copy-Item -Path 'C:\Users\HeYuHan\Desktop\Plugins-Dev\EndStone\Projects\endstone-easybackuper\dist\end*.whl' -Destination 'C:\Users\HeYuHan\Desktop\Plugins-Dev\EndStone\bedrock_server\plugins'
 
-Write-Host "=== å®Œæˆï¼Œå¯åŠ¨æœåŠ¡å™¨ ===" -ForegroundColor Green
+Write-Host "=== Íê³É£¬Æô¶¯·şÎñÆ÷ ===" -ForegroundColor Green
 Get-ChildItem 'C:\Users\HeYuHan\Desktop\Plugins-Dev\EndStone\bedrock_server\plugins\endstone_easybackuper*.whl'
 cd ~\Desktop\Plugins-Dev\EndStone\
 start .\start.cmd

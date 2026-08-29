@@ -1,5 +1,5 @@
 # python 库
-import re, os, json, shutil, zipfile, time, random
+import re, os, json, shutil, zipfile, time, random, sys
 from datetime import datetime
 from pathlib import Path
 from concurrent.futures import ThreadPoolExecutor, as_completed
@@ -19,7 +19,7 @@ from .bstats import BStats, SimplePie
 plugin_name = "EasyBackuper"
 plugin_name_smallest = "easybackuper"
 plugin_description = "一个基于 EndStone 的轻量级、高性能、功能全面的Minecraft服务器热备份插件 / A lightweight, high-performance, and feature-rich hot backup plugin for Minecraft servers based on EndStone."
-plugin_version = "0.4.6-beta.1"
+plugin_version = "0.4.6-beta.2"
 plugin_author = ["梦涵LOVE"]
 plugin_website = "https://www.minebbs.com/resources/easybackuper-eb-minecraft.14896/"
 plugin_github_link = "https://github.com/MengHanLOVE1027/endstone-easybackuper"
@@ -31,16 +31,20 @@ plugin_copyright = "务必保留原作者信息！"
 current_plugin_version = "v" + plugin_version
 plugin_full_name = plugin_name + " " + current_plugin_version
 
-# 读取文件内容
-with open("./server.properties", "r", encoding="utf-8") as file:
-    server_properties_file = file.read()
+# 读取文件内容（兼容 UTF-8 / GBK 编码的 server.properties）
+with open("./server.properties", "rb") as file:
+    raw = file.read()
+try:
+    server_properties_file = raw.decode("utf-8")
+except UnicodeDecodeError:
+    server_properties_file = raw.decode("gbk", errors="replace")
 
 plugin_path = Path(f"./plugins/{plugin_name}")
 plugin_config_path = plugin_path / "config" / f"{plugin_name}.json"
 backup_tmp_path = Path("./backup_tmp")  # 临时复制解压缩路径
-world_level_name = re.search(r"level-name=(.*)", server_properties_file).group(
+world_level_name = re.search(r"level-name=([^\r\n]*)", server_properties_file).group(
     1
-)  # 存档名称
+).strip()  # 存档名称（去掉 Windows CRLF 留下的 \r 及两端空白）
 world_folder_path = Path(f"./worlds/{world_level_name}")  # 存档路径
 
 
@@ -146,6 +150,47 @@ def format_file_size(size_bytes: int) -> str:
     return f"{size:.2f} {size_names[i]}"
 
 
+_color_support_cache = None
+
+
+def _strip_ansi(text: str) -> str:
+    """移除文本中的 ANSI 颜色转义序列"""
+    return re.sub(r"\x1b\[[0-9;]*m", "", str(text))
+
+
+def _color_supported() -> bool:
+    """检测并启用当前控制台的 ANSI 颜色支持"""
+    global _color_support_cache
+    if _color_support_cache is not None:
+        return _color_support_cache
+
+    result = False
+    # 非 TTY 输出（例如重定向到文件/管道）不支持颜色
+    try:
+        if sys.stdout.isatty():
+            if os.name == "nt":
+                # Windows：尝试启用 VT 处理（ENABLE_VIRTUAL_TERMINAL_PROCESSING）
+                try:
+                    import ctypes
+                    kernel32 = ctypes.windll.kernel32
+                    handle = kernel32.GetStdHandle(-11)  # STD_OUTPUT_HANDLE
+                    mode = ctypes.c_uint()
+                    if kernel32.GetConsoleMode(handle, ctypes.byref(mode)):
+                        mode.value |= 0x0004
+                        result = bool(kernel32.SetConsoleMode(handle, mode.value))
+                except Exception:
+                    result = False
+            else:
+                # 非 Windows：依据 TERM 环境变量判断
+                term = os.environ.get("TERM", "")
+                result = bool(term) and term != "dumb"
+    except Exception:
+        result = False
+
+    _color_support_cache = result
+    return result
+
+
 # NOTE: 自制日志头
 def plugin_print(text, level="INFO") -> bool:
     """
@@ -162,18 +207,29 @@ def plugin_print(text, level="INFO") -> bool:
         "ERROR": "\x1b[31m",    # 红色
         "SUCCESS": "\x1b[32m"   # 绿色
     }
-    
+
     # 获取日志级别颜色
     level_color = level_colors.get(level, "\x1b[37m")
-    
-    # 自制Logger消息头
-    logger_head = f"[\x1b[93m{plugin_name}\x1b[0m] [{level_color}{level}\x1b[0m] "
-    
+
+    color_supported = _color_supported()
+    if color_supported:
+        # 自制Logger消息头（带颜色）
+        logger_head = f"[\x1b[93m{plugin_name}\x1b[0m] [{level_color}{level}\x1b[0m] "
+        # 文本已内嵌颜色代码时原样输出，避免渐变与内嵌转义相互嵌套导致乱码
+        if "\x1b[" in str(text):
+            display_text = str(text)
+        else:
+            display_text = str(RandomColor(text))
+    else:
+        # 不支持颜色时输出纯文本（去除全部颜色代码）
+        logger_head = f"[{plugin_name}] [{level}] "
+        display_text = _strip_ansi(text)
+
     # 使用锁确保线程安全
     with print_lock:
-        print(logger_head + str(RandomColor(text)))
-    
-    # 记录到日志文件
+        print(logger_head + display_text)
+
+    # 记录到日志文件（始终写入纯文本，不带颜色代码）
     log_level_map = {
         "DEBUG": logging.DEBUG,
         "INFO": logging.INFO,
@@ -181,11 +237,11 @@ def plugin_print(text, level="INFO") -> bool:
         "ERROR": logging.ERROR,
         "SUCCESS": logging.INFO
     }
-    
+
     # 将SUCCESS级别映射为INFO级别记录到日志
     log_level = log_level_map.get(level, logging.INFO)
-    logger.log(log_level, str(text))
-    
+    logger.log(log_level, _strip_ansi(str(text)))
+
     return True
 
 
@@ -258,6 +314,7 @@ plugin_config_file = """
 """
 
 # TAG: 默认翻译文件内容
+# 语言文件中的 lang_version 取插件版本号（plugin_version），版本不一致时旧语言文件会自动重新生成
 default_translations = {
     "zh_CN": {
         "easybackuper.auto_clean.disabled": "自动清理功能未启用",
@@ -308,7 +365,7 @@ default_translations = {
         "easybackuper.backup.success": "备份成功！\x1b[93m备份存档：%s (%s) \x1b[32m耗时: %s\x1b[0m",
         "easybackuper.broadcast.start": "开始备份力！",
         "easybackuper.broadcast.failed": "备份失败！",
-        "easybackuper.broadcast.failed.message": "§2§l[EasyBackuper]§r§c备份失败！",
+        "easybackuper.broadcast.failed.message": "§2§l[EasyBackuper] §r§c备份失败！",
         "easybackuper.broadcast.success": "备份成功！§e备份存档：%s (%s) §a耗时: %s",
         "easybackuper.command.reload.success": "配置文件重载完成！",
         "easybackuper.command.reload.reloading": "正在重载配置文件...",
@@ -334,6 +391,34 @@ default_translations = {
         "easybackuper.plugin.installed": "%s 已加载",
         "easybackuper.plugin.version": "版本: %s",
         "easybackuper.plugin.github": "GitHub 仓库：%s",
+        "easybackuper.plugin.thanks": "感谢您使用Easy系列插件！",
+        "easybackuper.plugin.license": "本插件使用 %s 许可证协议进行发布",
+        "easybackuper.plugin.minebbs": "插件MineBBS资源帖：%s",
+        "easybackuper.plugin.qq_group": "Easy系列插件交流群：%s",
+        "easybackuper.bstats.telemetry_status": "遥测状态: %s",
+        "easybackuper.bstats.enabled": "已启用",
+        "easybackuper.bstats.disabled": "已禁用",
+        "easybackuper.bstats.config_load_failed": "加载配置失败: %s",
+        "easybackuper.bstats.traceback": "异常堆栈: %s",
+        "easybackuper.bstats.config_save_failed": "保存配置失败: %s",
+        "easybackuper.bstats.config_init_failed": "初始化配置失败: %s",
+        "easybackuper.bstats.system_probe_failed": "探测系统信息失败: %s",
+        "easybackuper.bstats.chart_collect_failed": "收集图表数据失败: %s",
+        "easybackuper.bstats.disabled_skip": "遥测模块已禁用，跳过上报。",
+        "easybackuper.bstats.prepare_payload": "准备上报数据包内容:",
+        "easybackuper.bstats.submitting": "正在提交遥测数据到 bStats 服务器...",
+        "easybackuper.bstats.submit_success": "遥测数据上报成功！",
+        "easybackuper.bstats.empty": "(空)",
+        "easybackuper.bstats.response_body": "响应内容: %s",
+        "easybackuper.bstats.submit_failed_code": "上报失败，状态码: %s",
+        "easybackuper.bstats.response_result": "返回结果: %s",
+        "easybackuper.bstats.network_error": "网络请求异常: %s",
+        "easybackuper.bstats.submit_error": "提交数据时发生错误: %s",
+        "easybackuper.bstats.started": "%s 遥测模块已启动。",
+        "easybackuper.bstats.first_report": "首次数据将在 30 秒后发送,之后每 30 分钟发送一次。",
+        "easybackuper.bstats.plugin_info": "插件ID: %s, 插件版本: %s",
+        "easybackuper.bstats.debug_mode": "调试模式: %s",
+        "easybackuper.bstats.stopped": "%s 遥测模块已关闭。",
         "easybackuper.plugin.status.auto_backup.enabled": "自动备份状态：已启用 (间隔: %s)",
         "easybackuper.plugin.status.auto_backup.disabled": "自动备份状态：未启用",
         "easybackuper.plugin.status.auto_clean.enabled": "自动清理状态：已启用 (最大保留: %s 个)",
@@ -349,6 +434,8 @@ default_translations = {
         "easybackuper.plugin.description": "一个基于 EndStone 的轻量级、高性能、功能全面的Minecraft服务器热备份插件",
         "easybackuper.title.no_players": "没有玩家在线，跳过发送标题消息",
         "easybackuper.lang.init": "初始化语言文件: %s",
+        "easybackuper.lang.updated": "更新语言文件: %s",
+        "easybackuper.lang.write_failed": "写入语言文件失败 %s: %s",
         "easybackuper.lang.init_failed": "初始化语言文件失败 %s: %s",
         "easybackuper.copy.file_exception": "复制文件异常 %s: %s",
         "easybackuper.compress.exception": "压缩文件异常: %s",
@@ -380,9 +467,9 @@ default_translations = {
         "easybackuper.restore.restore_success": "存档恢复成功！",
         "easybackuper.restore.restore_failed": "存档恢复失败: %s",
         "easybackuper.restore.no_permission": "您没有权限执行此操作！",
-        "easybackuper.restore.help": "§a[EasyBackuper] §f回档命令帮助:\n§e/restore §f- 显示此帮助信息\n§e/restore list [数量] §f- 列出指定数量的备份\n§e/restore <索引> §f- 回档到指定索引的备份",
-        "easybackuper.restore.help.console": "回档命令帮助:\n/restore - 显示此帮助信息\n/restore list <数量> - 列出指定数量的备份\n/restore <索引> - 回档到指定索引的备份",
-        "easybackuper.restore.help.player": "回档命令帮助:\n/restore - 显示此帮助信息\n/restore list <数量> - 列出指定数量的备份\n/restore <索引> - 回档到指定索引的备份",
+        "easybackuper.restore.help": "§a[EasyBackuper] §f回档命令帮助:\n§e/restore §f- 显示此帮助信息\n§e/restore list [数量|all] §f- 列出备份（all 列出全部）\n§e/restore <索引> §f- 回档到指定索引的备份",
+        "easybackuper.restore.help.console": "回档命令帮助:\n/restore - 显示此帮助信息\n/restore list [数量|all] - 列出备份（all 列出全部）\n/restore <索引> - 回档到指定索引的备份",
+        "easybackuper.restore.help.player": "回档命令帮助:\n/restore - 显示此帮助信息\n/restore list [数量|all] - 列出备份（all 列出全部）\n/restore <索引> - 回档到指定索引的备份",
         "easybackuper.restore.file_not_found": "备份文件不存在: %s",
         "easybackuper.restore.extract_failed": "解压备份失败: %s",
         "easybackuper.restore.world_not_found": "存档文件夹不存在: %s",
@@ -462,7 +549,7 @@ default_translations = {
         "easybackuper.backup.success": "Backup successful! \x1b[93mArchive: %s (%s) \x1b[32mTime: %s\x1b[0m",
         "easybackuper.broadcast.start": "Starting backup!",
         "easybackuper.broadcast.failed": "Backup failed!",
-        "easybackuper.broadcast.failed.message": "§2§l[EasyBackuper]§r§cBackup failed!",
+        "easybackuper.broadcast.failed.message": "§2§l[EasyBackuper] §r§cBackup failed!",
         "easybackuper.broadcast.success": "Backup successful! §eArchive: %s (%s) §aTime: %s",
         "easybackuper.command.reload.success": "Configuration file reloaded successfully!",
         "easybackuper.command.reload.reloading": "Reloading configuration file...",
@@ -488,6 +575,34 @@ default_translations = {
         "easybackuper.plugin.installed": "%s Loaded.",
         "easybackuper.plugin.version": "Version: %s",
         "easybackuper.plugin.github": "GitHub repository: %s",
+        "easybackuper.plugin.thanks": "Thank you for using Easy series plugins!",
+        "easybackuper.plugin.license": "This plugin is released under the %s license",
+        "easybackuper.plugin.minebbs": "Plugin MineBBS thread: %s",
+        "easybackuper.plugin.qq_group": "Easy series plugin discussion group: %s",
+        "easybackuper.bstats.telemetry_status": "Telemetry status: %s",
+        "easybackuper.bstats.enabled": "Enabled",
+        "easybackuper.bstats.disabled": "Disabled",
+        "easybackuper.bstats.config_load_failed": "Failed to load config: %s",
+        "easybackuper.bstats.traceback": "Exception traceback: %s",
+        "easybackuper.bstats.config_save_failed": "Failed to save config: %s",
+        "easybackuper.bstats.config_init_failed": "Failed to initialize config: %s",
+        "easybackuper.bstats.system_probe_failed": "Failed to probe system info: %s",
+        "easybackuper.bstats.chart_collect_failed": "Failed to collect chart data: %s",
+        "easybackuper.bstats.disabled_skip": "Telemetry is disabled, skipping report.",
+        "easybackuper.bstats.prepare_payload": "Preparing payload content:",
+        "easybackuper.bstats.submitting": "Submitting telemetry data to bStats server...",
+        "easybackuper.bstats.submit_success": "Telemetry data submitted successfully!",
+        "easybackuper.bstats.empty": "(empty)",
+        "easybackuper.bstats.response_body": "Response body: %s",
+        "easybackuper.bstats.submit_failed_code": "Submission failed, status code: %s",
+        "easybackuper.bstats.response_result": "Response result: %s",
+        "easybackuper.bstats.network_error": "Network request error: %s",
+        "easybackuper.bstats.submit_error": "Error while submitting data: %s",
+        "easybackuper.bstats.started": "%s telemetry module started.",
+        "easybackuper.bstats.first_report": "First data will be sent in 30 seconds, then every 30 minutes.",
+        "easybackuper.bstats.plugin_info": "Plugin ID: %s, plugin version: %s",
+        "easybackuper.bstats.debug_mode": "Debug mode: %s",
+        "easybackuper.bstats.stopped": "%s telemetry module stopped.",
         "easybackuper.plugin.status.auto_backup.enabled": "Auto backup status: Enabled (interval: %s)",
         "easybackuper.plugin.status.auto_backup.disabled": "Auto backup status: Disabled",
         "easybackuper.plugin.status.auto_clean.enabled": "Auto clean status: Enabled (max keep: %s)",
@@ -503,6 +618,8 @@ default_translations = {
         "easybackuper.plugin.description": "A lightweight, high-performance, and feature-rich hot backup plugin for Minecraft servers based on EndStone.",
         "easybackuper.title.no_players": "No players online, skipping title message",
         "easybackuper.lang.init": "Initializing language file: %s",
+        "easybackuper.lang.updated": "Updated language file: %s",
+        "easybackuper.lang.write_failed": "Failed to write language file %s: %s",
         "easybackuper.lang.init_failed": "Failed to initialize language file %s: %s",
         "easybackuper.copy.file_exception": "Copy file exception %s: %s",
         "easybackuper.compress.exception": "Compress file exception: %s",
@@ -534,9 +651,9 @@ default_translations = {
         "easybackuper.restore.restore_success": "World restore successful!",
         "easybackuper.restore.restore_failed": "World restore failed: %s",
         "easybackuper.restore.no_permission": "You don't have permission to perform this action!",
-        "easybackuper.restore.help": "§a[EasyBackuper] §fRestore command help:\n§e/restore §f- Show this help message\n§e/restore list [count] §f- List specified number of backups\n§e/restore <index> §f- Restore to backup with specified index",
-        "easybackuper.restore.help.console": "Restore command help:\n/restore - Show this help message\n/restore list <count> - List specified number of backups\n/restore <index> - Restore to backup with specified index",
-        "easybackuper.restore.help.player": "Restore command help:\n/restore - Show this help message\n/restore list <count> - List specified number of backups\n/restore <index> - Restore to backup with specified index",
+        "easybackuper.restore.help": "§a[EasyBackuper] §fRestore command help:\n§e/restore §f- Show this help message\n§e/restore list [count|all] §f- List backups (all for every backup)\n§e/restore <index> §f- Restore to backup with specified index",
+        "easybackuper.restore.help.console": "Restore command help:\n/restore - Show this help message\n/restore list [count|all] - List backups (all for every backup)\n/restore <index> - Restore to backup with specified index",
+        "easybackuper.restore.help.player": "Restore command help:\n/restore - Show this help message\n/restore list [count|all] - List backups (all for every backup)\n/restore <index> - Restore to backup with specified index",
         "easybackuper.restore.file_not_found": "Backup file not found: %s",
         "easybackuper.restore.extract_failed": "Failed to extract backup: %s",
         "easybackuper.restore.world_not_found": "World folder not found: %s",
@@ -667,7 +784,7 @@ class EasyBackuperPlugin(Plugin):
             "description": "Restore backup",
             "usages": [
                 "/restore",
-                "/restore list <count: int>",
+                "/restore list [count: str]",
                 "/restore <index: int>"
             ],
             "permissions": ["easybackuper_plugin.command.only_op"]
@@ -729,10 +846,11 @@ class EasyBackuperPlugin(Plugin):
     def load_translations(self) -> None:
             """
             加载翻译文件
+            语言文件带有 lang_version（取插件版本号），版本不一致时重新生成整份文件（会丢弃用户对语言文件的手动修改）
             :return: None
             """
             global default_translations
-            
+
             # 翻译文件放在插件配置文件夹下的langs文件夹
             lang_dir = plugin_path / "langs"
 
@@ -745,29 +863,48 @@ class EasyBackuperPlugin(Plugin):
                     self.translations[lang] = {}
                 self.translations[lang].update(translations)
 
-            # 检查并创建语言文件（如果不存在）
+            # 检查并创建/更新语言文件（文件缺失或 lang_version 不匹配时重新生成整份文件）
             for lang, translations in default_translations.items():
                 lang_file = lang_dir / f"{lang}.json"
-                if not lang_file.exists():
+                file_missing = not lang_file.exists()
+                need_write = file_missing
+                if lang_file.exists():
+                    try:
+                        with open(lang_file, "r", encoding="utf-8") as f:
+                            old_data = json.load(f)
+                        if old_data.get("lang_version") != plugin_version:
+                            need_write = True
+                    except Exception:
+                        # 文件损坏或无法解析，重新生成
+                        need_write = True
+                if need_write:
                     try:
                         with open(lang_file, "w", encoding="utf-8") as f:
-                            json.dump({lang: translations}, f, indent=4, ensure_ascii=False)
-                        plugin_print(f"初始化语言文件: {lang_file}", level="INFO")
+                            json.dump(
+                                {"lang_version": plugin_version, lang: translations},
+                                f,
+                                indent=4,
+                                ensure_ascii=False,
+                            )
+                        action_key = "easybackuper.lang.init" if file_missing else "easybackuper.lang.updated"
+                        plugin_print(self.translate(action_key, lang_file), level="INFO")
                     except Exception as e:
-                        plugin_print(f"初始化语言文件失败 {lang_file}: {str(e)}", level="ERROR")
+                        plugin_print(self.translate("easybackuper.lang.write_failed", lang_file, str(e)), level="ERROR")
 
-            # 加载所有语言文件
+            # 加载所有语言文件（跳过 lang_version 字段）
             for lang_file in lang_dir.glob("*.json"):
                 try:
                     with open(lang_file, "r", encoding="utf-8") as f:
                         lang_data = json.load(f)
                         # 合并翻译数据，确保按语言分类
                         for lang, translations in lang_data.items():
+                            if lang == "lang_version":
+                                continue
                             if lang not in self.translations:
                                 self.translations[lang] = {}
                             self.translations[lang].update(translations)
                 except Exception as e:
-                    plugin_print(f"加载翻译文件失败 {lang_file}: {str(e)}", level="ERROR")
+                    plugin_print(self.translate("easybackuper.lang.load_failed", lang_file, str(e)), level="ERROR")
 
     # NOTE: #2备份功能
     def backup_2(self) -> None:
@@ -1023,8 +1160,8 @@ class EasyBackuperPlugin(Plugin):
                         if not os.path.exists(pluginConfig["BackupFolderPath"]):
                             os.mkdir(pluginConfig["BackupFolderPath"])
 
-                        # 压缩后的名字
-                        path = str(exe_7z_path) + " a -tzip " + '"' + zip_file_new + '" ' + '"./' + month_rank_dir + '/*"'
+                        # 压缩后的名字（使用配置中的压缩参数，避免 method=7z 时仍产出 zip 内容）
+                        path = str(exe_7z_path) + " " + " ".join(compress_args) + ' "' + zip_file_new + '" "./' + month_rank_dir + '/*"'
                         plugin_print(self.translate("easybackuper.backup.7z_command", path), level="DEBUG")
                         result = os.system(path)
                         if result == 0:
@@ -1409,7 +1546,7 @@ class EasyBackuperPlugin(Plugin):
         # 如果开启广播功能则进行广播
         if broadcast_status:
             self.server.broadcast(
-                "§2§l[EasyBackuper]§r§3" + self.translate('easybackuper.broadcast.start'),
+                "§2§l[EasyBackuper] §r§3" + self.translate('easybackuper.broadcast.start'),
                 "easybackuper_plugin.command.players",
             )
 
@@ -1494,7 +1631,7 @@ class EasyBackuperPlugin(Plugin):
         if broadcast_status:
             # 发送广播消息
             self.server.broadcast(
-                "§2§l[EasyBackuper]§r§6" + self.translate('easybackuper.broadcast.success', archive_name, archive_size_mb, backup_time),
+                "§2§l[EasyBackuper] §r§6" + self.translate('easybackuper.broadcast.success', archive_name, archive_size_mb, backup_time),
                 "easybackuper_plugin.command.players",
             )
 
@@ -1575,8 +1712,9 @@ class EasyBackuperPlugin(Plugin):
             # 按修改时间倒序排序（最新的在前）
             backup_files.sort(key=lambda x: x[0], reverse=True)
 
-            # 限制显示数量
-            backup_files = backup_files[:limit]
+            # 限制显示数量（limit == -1 时列出全部）
+            if limit != -1:
+                backup_files = backup_files[:limit]
 
             if not backup_files:
                 sender.send_message(f"§c[EasyBackuper] §f{self.translate('easybackuper.restore.no_backups')}")
@@ -1879,11 +2017,14 @@ class EasyBackuperPlugin(Plugin):
                 # 列出备份
                 limit = 10
                 if len(args) > 1:
-                    try:
-                        limit = int(args[1])
-                    except ValueError:
-                        sender.send_message(f"§c[EasyBackuper] §f{self.translate('easybackuper.restore.invalid_argument', args[1])}")
-                        return True
+                    if args[1] == "all":
+                        limit = -1  # 列出全部备份
+                    else:
+                        try:
+                            limit = int(args[1])
+                        except ValueError:
+                            sender.send_message(f"§c[EasyBackuper] §f{self.translate('easybackuper.restore.invalid_argument', args[1])}")
+                            return True
                 self.list_backups(sender, limit)
             else:
                 # 尝试解析索引
@@ -1907,11 +2048,11 @@ class EasyBackuperPlugin(Plugin):
         print(RandomColor(f"""                                {self.translate('easybackuper.logo.author')}{plugin_author[0]}               {self.translate('easybackuper.logo.version')}{plugin_version}[{pluginConfig.get("Language")}]"""))
         plugin_print(f"="*80, "INFO")
         plugin_print(f"{plugin_name} - {self.translate('easybackuper.plugin.description')}")
-        plugin_print(f"感谢您使用Easy系列插件！")
-        plugin_print(f"本插件使用 {plugin_license} 许可证协议进行发布")
-        plugin_print(f"{self.translate('easybackuper.plugin.github', plugin_github_link)}{plugin_github_link}")
-        plugin_print(f"插件MineBBS资源帖：{plugin_minebbs_link}")
-        plugin_print(f"Easy系列插件交流群：1083195477")
+        plugin_print(self.translate('easybackuper.plugin.thanks'))
+        plugin_print(self.translate('easybackuper.plugin.license', plugin_license))
+        plugin_print(self.translate('easybackuper.plugin.github', plugin_github_link))
+        plugin_print(self.translate('easybackuper.plugin.minebbs', plugin_minebbs_link))
+        plugin_print(self.translate('easybackuper.plugin.qq_group', '1083195477'))
         plugin_print(f"{self.translate('easybackuper.logo.author')}{plugin_author[0]} | {self.translate('easybackuper.plugin.version', plugin_version)}")
         
         # 显示功能状态

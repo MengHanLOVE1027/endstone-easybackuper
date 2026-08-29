@@ -992,7 +992,7 @@ func main() {
 	restoreInfo = RestoreInfo{
 		BackupFile: *backupFile,
 		ServerDir:  *serverDir,
-		WorldName:  *worldName,
+		WorldName:  strings.TrimSpace(*worldName),
 	}
 
 	// 加载配置
@@ -1001,12 +1001,28 @@ func main() {
 		os.Exit(1)
 	}
 
+	// 执行回档主流程（内部统一清理临时目录，返回进程退出码）
+	os.Exit(run())
+}
+
+// run 执行回档主流程
+// 返回进程退出码：0 成功，1 失败
+// 注意：不要在本函数内使用 os.Exit，否则会跳过下面的 defer，导致 temp_easybackuper 等临时目录残留
+func run() int {
 	// 设置日志
 	if err := setupLogging(restoreInfo.ServerDir); err != nil {
 		fmt.Printf("设置日志失败: %v\n", err)
-		os.Exit(1)
+		return 1
 	}
 	defer logFile.Close()
+
+	// 注册临时目录统一清理：无论成功还是失败，所有退出路径都会删除
+	tempDir := filepath.Join(restoreInfo.ServerDir, "temp_easybackuper")
+	tempBackupDir := filepath.Join(restoreInfo.ServerDir, "temp_easybackuper_backup")
+	defer func() {
+		os.RemoveAll(tempDir)
+		os.RemoveAll(tempBackupDir)
+	}()
 
 	pluginPrint(strings.Repeat("=", 60), "INFO")
 	pluginPrint(T("EasyBackuper 回档处理程序启动"), "SUCCESS")
@@ -1018,7 +1034,7 @@ func main() {
 	// 切换工作目录
 	if err := os.Chdir(restoreInfo.ServerDir); err != nil {
 		pluginPrint(T("切换工作目录失败: %v", err), "ERROR")
-		os.Exit(1)
+		return 1
 	}
 	pluginPrint(T("切换工作目录到: %s", restoreInfo.ServerDir), "INFO")
 
@@ -1054,17 +1070,15 @@ func main() {
 	pluginPrint(T("开始恢复备份"), "INFO")
 	worldsDir := filepath.Join(restoreInfo.ServerDir, "worlds")
 
-	// 创建临时目录用于解压
-	tempDir := filepath.Join(restoreInfo.ServerDir, "temp_easybackuper")
+	// 创建临时目录用于解压（先清理可能残留的旧目录）
 	if _, err := os.Stat(tempDir); err == nil {
 		os.RemoveAll(tempDir)
 	}
 
 	if err := os.MkdirAll(tempDir, 0755); err != nil {
 		pluginPrint(T("创建临时目录失败: %v", err), "ERROR")
-		os.Exit(1)
+		return 1
 	}
-	defer os.RemoveAll(tempDir)
 
 	pluginPrint(T("创建临时目录: %s", tempDir), "INFO")
 
@@ -1111,7 +1125,7 @@ func main() {
 
 	if err != nil {
 		pluginPrint(T("解压失败: %v", err), "ERROR")
-		os.Exit(1)
+		return 1
 	}
 
 	pluginPrint(strings.Repeat("=", 60), "INFO")
@@ -1134,7 +1148,7 @@ func main() {
 
 	if err := copyDirWithProgress(tempWorldDir, worldsDir, globalConfig.MaxWorkers); err != nil {
 		pluginPrint(T("文件复制失败: %v", err), "ERROR")
-		os.Exit(1)
+		return 1
 	}
 
 	pluginPrint(T("文件复制完成"), "SUCCESS")
@@ -1145,5 +1159,5 @@ func main() {
 
 	// 重启服务器
 	restartServer()
-	os.Exit(0)
+	return 0
 }
