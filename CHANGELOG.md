@@ -4,6 +4,33 @@
 
 ---
 
+## [0.4.6] - 2026-08-29
+
+### 🐛 修复
+- 修复读取 `server.properties` 时因编码问题导致的 `UnicodeDecodeError`（按字节读取，兼容 UTF-8 / GBK 编码）（[#21](https://github.com/MengHanLOVE1027/endstone-easybackuper/issues/21)）
+- 修复回档程序在 Linux 上因 EndStone 官方镜像不含 `p7zip-full` 而报 `exec: "7z": executable file not found` 的问题（[#22](https://github.com/MengHanLOVE1027/endstone-easybackuper/issues/22)）
+- 修复备份成功日志中的终端颜色代码泄露：自动检测终端是否支持 ANSI 颜色，支持时彩色显示，否则回退为纯文本；日志文件始终写入不含颜色代码的纯文本
+- 修复文本内嵌颜色代码时被渐变逐字符嵌套导致转义序列错乱的问题
+- 修复 Windows 下回档失败：`server.properties` 为 CRLF 换行时，读取的世界名会残留 `\r`，导致解压与恢复失败（正则改为排除换行符并去除首尾空白）
+- 修复回档程序硬编码 `-tzip` 导致备份被错误压缩为 zip 格式的问题（现改用配置中的压缩方式）
+- 修复回档程序残留临时目录：`os.Exit` 会跳过 `defer` 清理，导致 `temp_easybackuper` / `temp_easybackuper_backup` 在回档成功或失败后残留（重构为统一退出清理，覆盖所有退出路径）
+- 修复 Windows 下 `restore_handler.exe` 缺少自定义图标的问题（Go 资源文件 `.syso` 仅在 `go build .` 目录形式下才会链接，CI 与本地构建均已更新）
+- 修复启动横幅中 GitHub 链接重复显示的问题
+
+### ✨ 新增
+- 🎉 正式版 v0.4.6 发布
+- 回档程序支持读取配置文件中的 `Language` 项（`zh_CN`/`en_US`），输出日志自动切换中英文
+- 回档程序支持通过 `Compression.exe_7z_path` 自定义 7z 路径，备份与回档共用该配置
+- 合并回档程序为单一二进制，删除单独的英文版 `restore_handler_en` 及 CI 中对应的 `_en` 构建产物
+- `/restore list` 命令支持可选数量参数：`/restore list`（默认显示 10 条）、`/restore list <数量>`、`/restore list all`（显示全部）
+- 语言文件新增 `lang_version` 版本校验：与插件版本号不一致时自动重新生成整份语言文件，解决外部语言文件覆盖内置翻译导致信息过期的问题
+
+### 🔧 改进
+- 启动横幅与 bStats 遥测模块日志全面接入 i18n（此前中英混杂，部分日志为硬编码中文）
+- 更新 README 与英文文档，补充 Linux 自定义 7z 路径及回档程序语言跟随 `Language` 配置的说明
+
+---
+
 ## [0.4.6-beta.2] - 2026-08-29
 
 ### 🐛 修复

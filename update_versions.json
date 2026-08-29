@@ -1,6 +1,12 @@
 {
-    "latest_version": "0.4.6-beta.2",
+    "latest_version": "0.4.6",
     "versions": {
+        "0.4.6": {
+            "download_url": "https://github.com/MengHanLOVE1027/endstone-easybackuper/releases/download/v0.4.6/endstone_easybackuper-0.4.6-py3-none-any.whl",
+            "update_content": "release: v0.4.6 正式版发布，包含测试阶段全部修复与新增：回档程序支持 Language 配置切换中英文、自定义 7z 路径，合并为单一二进制；备份成功日志 ANSI 颜色自动检测；/restore list 支持可选数量与 all；修复 server.properties 编码、Linux p7zip、Windows 回档世界名残留 \\r、备份误压缩为 zip、回档残留临时目录、exe 缺图标等问题；语言文件新增 lang_version 版本校验自动更新；启动横幅与 bStats 日志全面接入 i18n",
+            "author": "梦涵LOVE",
+            "update_time": "2026-08-29 12:40:00"
+        },
         "0.4.6-beta.2": {
             "download_url": "https://github.com/MengHanLOVE1027/endstone-easybackuper/releases/download/v0.4.6-beta.2/endstone_easybackuper-0.4.6-beta.2-py3-none-any.whl",
             "update_content": "v0.4.6-beta.2 测试版：备份成功日志支持 ANSI 颜色自动检测，不支持时回退纯文本，日志文件不再包含颜色代码；/restore list 支持可选数量与 all；修复 Windows 回档失败（世界名残留 \\r）、备份被误压缩为 zip、回档残留 temp_easybackuper 临时目录、Windows exe 缺少图标等问题；语言文件新增 lang_version 版本校验自动更新；启动横幅与 bStats 日志全面接入 i18n",
