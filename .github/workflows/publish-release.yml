@@ -113,26 +113,12 @@ jobs:
           GOOS=windows GOARCH=amd64 go build -ldflags="-s -w" -o restore_handler.exe main.go
           echo "Built: restore_handler.exe"
 
-      - name: Build Go — restore_handler_en (Windows)
-        if: steps.check.outputs.exists == 'false' || github.event_name == 'workflow_dispatch'
-        working-directory: go/restore_handler_en
-        run: |
-          GOOS=windows GOARCH=amd64 go build -ldflags="-s -w" -o restore_handler_en.exe main_en.go
-          echo "Built: restore_handler_en.exe"
-
       - name: Build Go — restore_handler (Linux)
         if: steps.check.outputs.exists == 'false' || github.event_name == 'workflow_dispatch'
         working-directory: go/restore_handler
         run: |
           GOOS=linux GOARCH=amd64 go build -ldflags="-s -w" -o restore_handler_linux main.go
           echo "Built: restore_handler_linux"
-
-      - name: Build Go — restore_handler_en (Linux)
-        if: steps.check.outputs.exists == 'false' || github.event_name == 'workflow_dispatch'
-        working-directory: go/restore_handler_en
-        run: |
-          GOOS=linux GOARCH=amd64 go build -ldflags="-s -w" -o restore_handler_en_linux main_en.go
-          echo "Built: restore_handler_en_linux"
 
       # ────────────────────────────────────
       # 收集产物
@@ -146,9 +132,7 @@ jobs:
           cp dist/*.whl   artifacts/ 2>/dev/null || true
 
           cp go/restore_handler/restore_handler.exe           artifacts/ 2>/dev/null || true
-          cp go/restore_handler_en/restore_handler_en.exe     artifacts/ 2>/dev/null || true
           cp go/restore_handler/restore_handler_linux         artifacts/ 2>/dev/null || true
-          cp go/restore_handler_en/restore_handler_en_linux   artifacts/ 2>/dev/null || true
 
           echo "----- artifacts/ -----"
           ls -la artifacts/
@@ -216,10 +200,8 @@ jobs:
           | 平台 | 文件 | 语言 |
           |------|------|------|
           | 🐍 Python | \`*.whl\` | — |
-          | 🪟 Windows | \`restore_handler.exe\` | 中文 |
-          | 🪟 Windows | \`restore_handler_en.exe\` | English |
-          | 🐧 Linux | \`restore_handler_linux\` | 中文 |
-          | 🐧 Linux | \`restore_handler_en_linux\` | English |
+          | 🪟 Windows | \`restore_handler.exe\` | 中文/English（按配置） |
+          | 🐧 Linux | \`restore_handler_linux\` | 中文/English（按配置） |
 
           ### 📝 更新内容 · Changes
           BODYEOF
@@ -284,7 +266,6 @@ jobs:
             artifacts/*.whl
             artifacts/*.exe
             artifacts/restore_handler_linux
-            artifacts/restore_handler_en_linux
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 

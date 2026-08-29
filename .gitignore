@@ -4,3 +4,4 @@ dist
 build
 endstone_easybackuper.egg-info
 *.spec
+restore_handler*

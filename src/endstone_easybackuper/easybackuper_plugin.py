@@ -32,7 +32,7 @@ current_plugin_version = "v" + plugin_version
 plugin_full_name = plugin_name + " " + current_plugin_version
 
 # 读取文件内容
-with open("./server.properties", "r") as file:
+with open("./server.properties", "r", encoding="utf-8") as file:
     server_properties_file = file.read()
 
 plugin_path = Path(f"./plugins/{plugin_name}")
